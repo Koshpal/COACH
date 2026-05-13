@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, LogOut, Clock, Save, Trash2, Camera } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, LogOut, Clock, Save, Trash2, Camera, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { coachService } from '../../services/coach.service';
@@ -21,6 +21,8 @@ export const Settings: React.FC = () => {
   });
   const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const loadProfile = async () => {
     try {
@@ -88,6 +90,33 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+      showToast('Only JPG, PNG or WebP images are allowed.', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image must be under 5 MB.', 'error');
+      return;
+    }
+    setPhotoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const updated = await coachService.updateProfile(fd) as any;
+      const photoUrl = updated?.profile?.profilePhoto ?? updated?.profilePhoto ?? null;
+      setProfilePicture(photoUrl);
+      showToast('Profile photo updated!', 'success');
+    } catch {
+      showToast('Failed to upload photo.', 'error');
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
   const handleLogout = async () => {
     await authService.logout();
     navigate('/login');
@@ -112,14 +141,28 @@ export const Settings: React.FC = () => {
       <section className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-primary)] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-[var(--color-border-primary)] flex flex-col md:flex-row items-center gap-8">
           <div className="relative group">
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
             <div className="w-24 h-24 rounded-full bg-[var(--color-primary)] text-[var(--color-text-inverse)] flex items-center justify-center text-3xl font-bold overflow-hidden border-4 border-[var(--color-bg-card)] shadow-lg">
-              {profilePicture ? (
+              {photoUploading ? (
+                <Loader2 className="w-8 h-8 animate-spin text-white" />
+              ) : profilePicture ? (
                 <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <span>{(formData.firstName[0] || 'C').toUpperCase()}</span>
               )}
             </div>
-            <button className="absolute bottom-0 right-0 p-2 bg-[var(--color-bg-card)] border border-[var(--color-border-primary)] rounded-full shadow-md text-[var(--color-primary)] hover:scale-110 transition-all">
+            <button
+              type="button"
+              disabled={photoUploading}
+              onClick={() => photoInputRef.current?.click()}
+              className="absolute bottom-0 right-0 p-2 bg-[var(--color-bg-card)] border border-[var(--color-border-primary)] rounded-full shadow-md text-[var(--color-primary)] hover:scale-110 transition-all disabled:opacity-50"
+            >
               <Camera className="w-4 h-4" />
             </button>
           </div>
