@@ -17,7 +17,7 @@ export const Payments: React.FC = () => {
 
       <section className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-primary)] shadow-sm p-8 md:p-10">
         <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-warning)]/10 text-[var(--color-warning-dark)] border border-[var(--color-warning)]/30 text-xs font-bold uppercase tracking-wider">
             <AlertTriangle className="w-4 h-4" />
             Not connected
           </div>

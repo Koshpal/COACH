@@ -247,7 +247,7 @@ export const Settings: React.FC = () => {
             </div>
             <button
               onClick={toggleTheme}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--color-primary)]' : 'bg-gray-300'}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-border-secondary)]'}`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
@@ -272,14 +272,14 @@ export const Settings: React.FC = () => {
       </section>
 
       {/* Danger Zone */}
-      <section className="bg-red-50 rounded-2xl border border-red-100 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="bg-[var(--color-error-light)] rounded-2xl border border-[var(--color-error)]/20 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <h2 className="text-xl font-bold text-red-700 font-heading">Account Actions</h2>
-          <p className="text-sm text-red-600">Logging out will end your current session on this device.</p>
+          <h2 className="text-xl font-bold text-[var(--color-error)] font-heading">Account Actions</h2>
+          <p className="text-sm text-[var(--color-error)]">Logging out will end your current session on this device.</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-8 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/20 transition-all"
+          className="flex items-center gap-2 px-8 py-3 bg-[var(--color-error)] text-white font-bold rounded-xl hover:opacity-90 shadow-lg shadow-[var(--color-error)]/20 transition-all"
         >
           <LogOut className="w-5 h-5" />
           Logout

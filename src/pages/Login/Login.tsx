@@ -59,7 +59,6 @@ export const Login: React.FC = () => {
       if (!user || user.role !== 'COACH') {
         setError('Access denied. This portal is for coaches only.');
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
         return;
       }
 
@@ -93,9 +92,6 @@ export const Login: React.FC = () => {
           </h1>
           <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
             Sign in to your coach portal
-          </p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)] italic">
-            Demo: coach@koshpal.com / password123
           </p>
         </div>
 

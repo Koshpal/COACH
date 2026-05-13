@@ -2,20 +2,17 @@ import api from './api';
 import { User } from '../types/coach.types';
 
 export const authService = {
-  login: async (email: string, password: string): Promise<{ user: User; accessToken: string }> => {
+  login: async (email: string, password: string): Promise<{ user: User }> => {
     const response = await api.post('/auth/login', {
       email,
       password,
       role: 'COACH',
     });
-    
+
     if (response.data.user) {
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
-    if (response.data.accessToken) {
-      localStorage.setItem('token', response.data.accessToken);
-    }
-    
+
     return response.data;
   },
 
@@ -24,7 +21,6 @@ export const authService = {
       await api.post('/auth/logout');
     } finally {
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
     }
   },
 

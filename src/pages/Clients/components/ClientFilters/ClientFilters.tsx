@@ -17,12 +17,12 @@ export const ClientFilters: React.FC<ClientFiltersProps> = ({ search, setSearch,
         placeholder="Search clients by name..."
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        className="flex-1 px-3 py-2 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-input-bg)] text-[var(--color-input-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
       />
       <select
         value={status}
         onChange={e => setStatus(e.target.value as 'all' | 'active' | 'inactive')}
-        className="px-3 py-2 rounded-lg border border-gray-200 bg-white"
+        className="px-3 py-2 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-input-bg)] text-[var(--color-input-text)]"
       >
         <option value="all">All</option>
         <option value="active">Active</option>
@@ -31,7 +31,7 @@ export const ClientFilters: React.FC<ClientFiltersProps> = ({ search, setSearch,
       <select
         value={sort}
         onChange={e => setSort(e.target.value as 'recent' | 'nextSession')}
-        className="px-8 py-2 rounded-lg border border-gray-200 bg-white"
+        className="px-8 py-2 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-input-bg)] text-[var(--color-input-text)]"
       >
         <option value="recent">Sort: Recent Activity</option>
         <option value="nextSession">Sort: Next Session</option>

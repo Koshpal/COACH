@@ -259,7 +259,7 @@ export const Clients: React.FC = () => {
           ))}
         </div>
       ) : error ? (
-        <div className="px-6 py-10 text-center text-red-700 border border-red-200 rounded-3xl bg-red-50">
+        <div className="px-6 py-10 text-center text-[var(--color-error)] border border-[var(--color-error)]/20 rounded-3xl bg-[var(--color-error)]/10">
           <p className="font-semibold">{error}</p>
         </div>
       ) : filteredClients.length === 0 ? (

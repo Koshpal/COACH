@@ -122,7 +122,7 @@ export const EndSessionModal: React.FC<EndSessionModalProps> = ({ isOpen, onClos
             {topics.map((topic, i) => (
               <span key={i} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary-lightest)] text-[var(--color-primary)] text-xs font-bold rounded-full border border-[var(--color-primary-light)]">
                 {topic}
-                <button onClick={() => handleRemoveTopic(i)} className="hover:text-red-500"><X className="w-3 h-3" /></button>
+                <button onClick={() => handleRemoveTopic(i)} className="hover:text-[var(--color-error)]"><X className="w-3 h-3" /></button>
               </span>
             ))}
           </div>
@@ -142,23 +142,23 @@ export const EndSessionModal: React.FC<EndSessionModalProps> = ({ isOpen, onClos
             placeholder="Key takeaways and next steps for the client..."
             className="w-full p-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl focus:ring-2 focus:ring-[var(--color-primary)] outline-none resize-none transition-all text-sm"
           />
-          <p className="text-[10px] text-green-600 font-medium">This will be visible to the client in their portal.</p>
+          <p className="text-[10px] text-[var(--color-success-dark)] font-medium">This will be visible to the client in their portal.</p>
         </div>
 
         {/* Private Notes */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-[var(--color-text-primary)]">
-            <EyeOff className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-bold font-heading text-orange-600">Private Notes</span>
+            <EyeOff className="w-4 h-4 text-[var(--color-warning)]" />
+            <span className="text-sm font-bold font-heading text-[var(--color-warning-dark)]">Private Notes</span>
           </div>
           <textarea
             value={privateNotes}
             onChange={(e) => setPrivateNotes(e.target.value)}
             rows={3}
             placeholder="Personal observations and internal tracking..."
-            className="w-full p-4 bg-orange-50/20 border border-orange-100 rounded-xl focus:ring-2 focus:ring-orange-200 outline-none resize-none transition-all text-sm"
+            className="w-full p-4 bg-[var(--color-warning)]/5 border border-[var(--color-warning)]/20 rounded-xl focus:ring-2 focus:ring-[var(--color-warning)]/30 outline-none resize-none transition-all text-sm"
           />
-          <p className="text-[10px] text-orange-600 font-medium italic">These notes are completely private to you.</p>
+          <p className="text-[10px] text-[var(--color-warning-dark)] font-medium italic">These notes are completely private to you.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t border-[var(--color-border-primary)]">

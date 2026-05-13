@@ -19,12 +19,12 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" title="Reschedule Session">
       <div className="space-y-6">
-        <div className="p-6 rounded-2xl border border-amber-200 bg-amber-50/60">
+        <div className="p-6 rounded-2xl border border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-[var(--color-warning-dark)] mt-0.5" />
             <div>
-              <h3 className="font-bold text-amber-900">Rescheduling is not connected yet</h3>
-              <p className="mt-1 text-sm text-amber-800">
+              <h3 className="font-bold text-[var(--color-text-primary)]">Rescheduling is not connected yet</h3>
+              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                 The previous modal only simulated a success flow. There is no backend endpoint for rescheduling, so this action is disabled until that API is added.
               </p>
             </div>

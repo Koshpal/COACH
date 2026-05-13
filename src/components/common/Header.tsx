@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--color-bg-secondary)] transition-colors text-[var(--color-semantic-red-50)]"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--color-bg-secondary)] transition-colors text-[var(--color-error)]"
                 >
                   <LogOut className="w-5 h-5 opacity-70" />
                   <span className="flex-1 text-left font-medium">Log out</span>

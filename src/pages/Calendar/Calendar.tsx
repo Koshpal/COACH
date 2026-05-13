@@ -188,7 +188,7 @@ export const Calendar: React.FC = () => {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-10 text-center text-red-700">
+        <div className="rounded-3xl border border-[var(--color-error)]/20 bg-[var(--color-error)]/10 px-6 py-10 text-center text-[var(--color-error)]">
           <p className="font-semibold">{error}</p>
         </div>
       ) : visibleEvents.length === 0 ? (
@@ -250,7 +250,7 @@ export const Calendar: React.FC = () => {
                             key={event.id}
                             className={`group absolute z-10 cursor-pointer rounded-2xl border p-3 shadow-sm transition-all hover:shadow-lg ${
                               event.status === 'CANCELLED'
-                                ? 'border-red-200 bg-red-50/90 opacity-60'
+                                ? 'border-[var(--color-error)]/20 bg-[var(--color-error)]/10 opacity-60'
                                 : event.status === 'COMPLETED'
                                   ? 'border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] opacity-70'
                                   : event.status === 'LIVE'
@@ -366,7 +366,7 @@ export const Calendar: React.FC = () => {
                         key={event.id}
                         className={`rounded-xl border px-2 py-1.5 text-[10px] font-semibold shadow-sm ${
                           event.status === 'CANCELLED'
-                            ? 'border-red-200 bg-red-50 text-red-700'
+                            ? 'border-[var(--color-error)]/20 bg-[var(--color-error)]/10 text-[var(--color-error)]'
                             : event.status === 'COMPLETED'
                               ? 'border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)]'
                               : event.status === 'LIVE'

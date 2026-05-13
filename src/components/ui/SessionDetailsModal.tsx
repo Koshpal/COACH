@@ -140,7 +140,7 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-4 p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-black/5">
               <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] flex items-center justify-center shadow-sm">
-                <item.icon className={`w-5 h-5 ${item.isRating ? 'text-orange-400 fill-current' : 'text-[var(--color-text-secondary)]'}`} />
+                <item.icon className={`w-5 h-5 ${item.isRating ? 'text-[var(--color-warning)] fill-current' : 'text-[var(--color-text-secondary)]'}`} />
               </div>
               <div>
                 <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">{item.label}</p>
@@ -161,7 +161,7 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-[var(--color-text-primary)] font-heading uppercase tracking-wide flex items-center gap-2">
               Shared Summary
-              <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Employee sees this</span>
+              <span className="text-[10px] bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-0.5 rounded-full">Employee sees this</span>
             </h4>
             {!isEditingSummary && (
               <button
@@ -204,7 +204,7 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-[var(--color-text-primary)] font-heading uppercase tracking-wide flex items-center gap-2">
               Private Coach Notes
-              <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Only you see this</span>
+              <span className="text-[10px] bg-[var(--color-warning)]/10 text-[var(--color-warning-dark)] px-2 py-0.5 rounded-full">Only you see this</span>
             </h4>
             {!isEditingNotes && (
               <button
@@ -221,7 +221,7 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
                 value={coachNotes}
                 onChange={(e) => setCoachNotes(e.target.value)}
                 rows={3}
-                className="w-full p-4 bg-orange-50/30 border border-orange-100 rounded-xl focus:ring-2 focus:ring-orange-200 outline-none resize-none transition-all"
+                className="w-full p-4 bg-[var(--color-warning)]/5 border border-[var(--color-warning)]/20 rounded-xl focus:ring-2 focus:ring-[var(--color-warning)]/30 outline-none resize-none transition-all"
                 placeholder="Personal observations and future focus points..."
               />
               <div className="flex justify-end gap-3">
@@ -229,14 +229,14 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
                 <button
                   onClick={handleSaveNotes}
                   disabled={isSaving}
-                  className="px-6 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg shadow-md hover:opacity-90 disabled:opacity-50"
+                  className="px-6 py-1.5 bg-[var(--color-warning)] text-[var(--color-text-inverse)] text-xs font-bold rounded-lg shadow-md hover:opacity-90 disabled:opacity-50"
                 >
                   {isSaving ? 'Saving...' : 'Save Notes'}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-orange-50/20 rounded-xl border border-orange-100/50 text-sm text-orange-800/80 leading-relaxed">
+            <div className="p-4 bg-[var(--color-warning)]/5 rounded-xl border border-[var(--color-warning)]/15 text-sm text-[var(--color-warning-dark)] leading-relaxed">
               {coachNotes || 'No private notes added.'}
             </div>
           )}
@@ -248,8 +248,8 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
             <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : employeeFeedback ? (
-          <div className="space-y-3 p-4 bg-green-50/30 rounded-2xl border border-green-100/50">
-            <h4 className="text-sm font-bold text-green-700 font-heading uppercase tracking-wide flex items-center gap-2">
+          <div className="space-y-3 p-4 bg-[var(--color-success)]/10 rounded-2xl border border-[var(--color-success)]/20">
+            <h4 className="text-sm font-bold text-[var(--color-success-darkest)] font-heading uppercase tracking-wide flex items-center gap-2">
               <Star className="w-4 h-4 fill-current" />
               Employee Feedback
             </h4>
@@ -260,17 +260,17 @@ export const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ isOpen
                     key={i}
                     className={`w-4 h-4 ${
                       i < employeeFeedback.rating
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
+                        ? 'fill-[var(--color-warning-light)] text-[var(--color-warning-light)]'
+                        : 'text-[var(--color-border-secondary)]'
                     }`}
                   />
                 ))}
-                <span className="ml-2 font-bold text-green-700">{employeeFeedback.rating}/5</span>
+                <span className="ml-2 font-bold text-[var(--color-success-darkest)]">{employeeFeedback.rating}/5</span>
               </div>
               {employeeFeedback.feedbackText && (
-                <p className="text-sm text-green-700/80 italic">{employeeFeedback.feedbackText}</p>
+                <p className="text-sm text-[var(--color-success-darkest)]/80 italic">{employeeFeedback.feedbackText}</p>
               )}
-              <p className="text-xs text-green-600/60 mt-2">
+              <p className="text-xs text-[var(--color-success-dark)]/60 mt-2">
                 Submitted: {formatDate(employeeFeedback.createdAt)}
               </p>
             </div>

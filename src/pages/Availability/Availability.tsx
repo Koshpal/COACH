@@ -216,7 +216,7 @@ export const Availability: React.FC = () => {
                           </select>
                         </div>
                         <div className="flex-1"></div>
-                        <button onClick={() => removeSlot(day, index)} className="p-2 text-[var(--color-error)] hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => removeSlot(day, index)} className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
