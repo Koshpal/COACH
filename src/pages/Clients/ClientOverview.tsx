@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { coachService } from '../../services/coach.service';
 import { Client } from '../../types/client.types';
 import { SessionDetailsModal } from '../../components/ui/SessionDetailsModal';
+import { NotesTab } from './components/NotesTab';
 
 type ClientOverviewState = Client & {
   name?: string;
@@ -74,6 +75,7 @@ export const ClientOverview: React.FC = () => {
       const allConsultations = await coachService.getSessions();
       // Filter sessions for this specific client
       const allList = [
+        ...((allConsultations as any).todayLive || []),
         ...((allConsultations as any).bookedToday || []),
         ...((allConsultations as any).upcoming || []),
         ...((allConsultations as any).history || []),
@@ -267,11 +269,7 @@ export const ClientOverview: React.FC = () => {
         )}
 
         {activeTab === 'Notes' && (
-          <div className="mt-8 space-y-6 animate-fade-in">
-            <div className="p-12 text-center bg-[var(--color-bg-secondary)] rounded-2xl">
-              <p className="text-[var(--color-text-secondary)]">Client notes feature is currently being refactored.</p>
-            </div>
-          </div>
+          <NotesTab sessions={consultations} />
         )}
 
         {activeTab === 'Messages' && (
