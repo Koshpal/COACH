@@ -19,7 +19,10 @@ export const Settings: React.FC = () => {
     email: '',
     phone: '',
   });
+  const [originalFormData, setOriginalFormData] = useState(formData);
   const [timezone, setTimezone] = useState('Asia/Kolkata');
+  const [originalTimezone, setOriginalTimezone] = useState('Asia/Kolkata');
+  const [phoneError, setPhoneError] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -31,16 +34,20 @@ export const Settings: React.FC = () => {
       
       // Split name into first and last name if possible
       const nameParts = (user.name || user.fullName || '').split(' ');
-      setFormData({
+      const loaded = {
         firstName: user.firstName || nameParts[0] || '',
         lastName: user.lastName || nameParts.slice(1).join(' ') || '',
         email: user.email || '',
         phone: user.phone || '',
-      });
+      };
+      setFormData(loaded);
+      setOriginalFormData(loaded);
 
       // Try to get coach profile for timezone
       const coachProfile = await coachService.getProfile();
-      setTimezone(coachProfile.timezone || 'Asia/Kolkata');
+      const tz = coachProfile.timezone || 'Asia/Kolkata';
+      setTimezone(tz);
+      setOriginalTimezone(tz);
       if (coachProfile.profilePhoto) setProfilePicture(coachProfile.profilePhoto);
       
     } catch (err) {
@@ -55,10 +62,37 @@ export const Settings: React.FC = () => {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Restrict phone field to valid phone characters
+    if (name === 'phone') {
+      const sanitized = value.replace(/[^\d\s+\-()]/g, '');
+      setFormData({ ...formData, phone: sanitized });
+      if (sanitized && !/^[+\d\s\-()]{7,20}$/.test(sanitized)) {
+        setPhoneError('Enter a valid phone number (7–20 digits).');
+      } else {
+        setPhoneError('');
+      }
+      return;
+    }
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCancel = () => {
+    setFormData(originalFormData);
+    setTimezone(originalTimezone);
+    setPhoneError('');
   };
 
   const handleSaveChanges = async () => {
+    if (phoneError) {
+      showToast('Please fix the phone number before saving.', 'error');
+      return;
+    }
+    if (formData.phone && !/^[+\d\s\-()]{7,20}$/.test(formData.phone.trim())) {
+      setPhoneError('Enter a valid phone number (7–20 digits).');
+      showToast('Please fix the phone number before saving.', 'error');
+      return;
+    }
     try {
       setSaving(true);
       const fullName = `${formData.firstName} ${formData.lastName}`.trim();
@@ -214,12 +248,23 @@ export const Settings: React.FC = () => {
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              className="w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+              placeholder="+91 98765 43210"
+              maxLength={20}
+              className={`w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all ${phoneError ? 'border-[var(--color-error)]' : 'border-[var(--color-border-primary)]'}`}
             />
+            {phoneError && (
+              <p className="text-xs text-[var(--color-error)] mt-1">{phoneError}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-4 pt-4">
-            <button className="px-6 py-2.5 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-bold rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-all">Cancel</button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-6 py-2.5 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-bold rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-all"
+            >
+              Cancel
+            </button>
             <button
               onClick={handleSaveChanges}
               disabled={saving}
