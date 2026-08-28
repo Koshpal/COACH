@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, LogOut, Clock, Save, Trash2, Camera, Loader2 } from 'lucide-react';
+import { LogOut, Sparkles, Save, Camera, Loader2, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { coachService } from '../../services/coach.service';
@@ -10,18 +10,11 @@ export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-  });
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '' });
   const [originalFormData, setOriginalFormData] = useState(formData);
-  const [timezone, setTimezone] = useState('Asia/Kolkata');
-  const [originalTimezone, setOriginalTimezone] = useState('Asia/Kolkata');
   const [phoneError, setPhoneError] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -31,25 +24,16 @@ export const Settings: React.FC = () => {
     try {
       setLoading(true);
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      // Split name into first and last name if possible
-      const nameParts = (user.name || user.fullName || '').split(' ');
       const loaded = {
-        firstName: user.firstName || nameParts[0] || '',
-        lastName: user.lastName || nameParts.slice(1).join(' ') || '',
+        fullName: user.name || user.fullName || '',
         email: user.email || '',
         phone: user.phone || '',
       };
       setFormData(loaded);
       setOriginalFormData(loaded);
 
-      // Try to get coach profile for timezone
       const coachProfile = await coachService.getProfile();
-      const tz = coachProfile.timezone || 'Asia/Kolkata';
-      setTimezone(tz);
-      setOriginalTimezone(tz);
       if (coachProfile.profilePhoto) setProfilePicture(coachProfile.profilePhoto);
-      
     } catch (err) {
       console.error('Error loading profile:', err);
     } finally {
@@ -57,21 +41,14 @@ export const Settings: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useEffect(() => { loadProfile(); }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Restrict phone field to valid phone characters
     if (name === 'phone') {
       const sanitized = value.replace(/[^\d\s+\-()]/g, '');
       setFormData({ ...formData, phone: sanitized });
-      if (sanitized && !/^[+\d\s\-()]{7,20}$/.test(sanitized)) {
-        setPhoneError('Enter a valid phone number (7–20 digits).');
-      } else {
-        setPhoneError('');
-      }
+      setPhoneError(sanitized && !/^[+\d\s\-()]{7,20}$/.test(sanitized) ? 'Enter a valid phone number (7–20 digits).' : '');
       return;
     }
     setFormData({ ...formData, [name]: value });
@@ -79,43 +56,30 @@ export const Settings: React.FC = () => {
 
   const handleCancel = () => {
     setFormData(originalFormData);
-    setTimezone(originalTimezone);
     setPhoneError('');
   };
 
   const handleSaveChanges = async () => {
-    if (phoneError) {
-      showToast('Please fix the phone number before saving.', 'error');
-      return;
-    }
-    if (formData.phone && !/^[+\d\s\-()]{7,20}$/.test(formData.phone.trim())) {
+    if (phoneError || (formData.phone && !/^[+\d\s\-()]{7,20}$/.test(formData.phone.trim()))) {
       setPhoneError('Enter a valid phone number (7–20 digits).');
       showToast('Please fix the phone number before saving.', 'error');
       return;
     }
     try {
       setSaving(true);
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
       const fd = new FormData();
-      fd.append('fullName', fullName);
+      fd.append('fullName', formData.fullName.trim());
       fd.append('phone', formData.phone);
-      
-      await Promise.all([
-        coachService.updateProfile(fd),
-        coachService.updateTimezone(timezone),
-      ]);
-      
-      // Update local storage
+      await coachService.updateProfile(fd);
+
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       localStorage.setItem('user', JSON.stringify({
         ...user,
-        name: fullName,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        name: formData.fullName.trim(),
         phone: formData.phone,
-        timezone,
       }));
-      
+
+      setOriginalFormData(formData);
       showToast('Profile updated successfully!', 'success');
     } catch (err) {
       showToast('Failed to update profile.', 'error');
@@ -164,6 +128,8 @@ export const Settings: React.FC = () => {
     );
   }
 
+  const initial = (formData.fullName.trim()[0] || 'C').toUpperCase();
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       <header>
@@ -188,7 +154,7 @@ export const Settings: React.FC = () => {
               ) : profilePicture ? (
                 <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <span>{(formData.firstName[0] || 'C').toUpperCase()}</span>
+                <span>{initial}</span>
               )}
             </div>
             <button
@@ -201,34 +167,22 @@ export const Settings: React.FC = () => {
             </button>
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">{formData.firstName} {formData.lastName}</h2>
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">{formData.fullName || 'Coach'}</h2>
             <p className="text-[var(--color-text-secondary)]">{formData.email}</p>
             <span className="inline-block mt-2 px-3 py-1 bg-[var(--color-success-bg)] text-[var(--color-success-darkest)] text-xs font-bold rounded-full border border-[var(--color-success)]">Verified Coach</span>
           </div>
         </div>
 
         <div className="p-6 md:p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-[var(--color-text-primary)]">First Name</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-[var(--color-text-primary)]">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-[var(--color-text-primary)]">Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+            />
           </div>
 
           <div className="space-y-2">
@@ -252,9 +206,7 @@ export const Settings: React.FC = () => {
               maxLength={20}
               className={`w-full px-4 py-2.5 bg-[var(--color-bg-secondary)] border rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all ${phoneError ? 'border-[var(--color-error)]' : 'border-[var(--color-border-primary)]'}`}
             />
-            {phoneError && (
-              <p className="text-xs text-[var(--color-error)] mt-1">{phoneError}</p>
-            )}
+            {phoneError && <p className="text-xs text-[var(--color-error)] mt-1">{phoneError}</p>}
           </div>
 
           <div className="flex justify-end gap-4 pt-4">
@@ -280,7 +232,7 @@ export const Settings: React.FC = () => {
       {/* Preferences Section */}
       <section className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-primary)] shadow-sm p-6 md:p-8 space-y-6">
         <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-heading flex items-center gap-2">
-          <Clock className="w-6 h-6 text-[var(--color-primary)]" />
+          <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           Preferences & Appearance
         </h2>
 
@@ -298,20 +250,14 @@ export const Settings: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-black/5">
-            <div className="flex-1">
-              <p className="font-bold text-[var(--color-text-primary)]">Default Timezone</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">Your availability slots will be based on this timezone</p>
+          <div className="flex items-start gap-3 p-4 bg-[var(--color-info-bg)] rounded-xl border border-[var(--color-primary-light)]">
+            <Info className="w-5 h-5 text-[var(--color-primary)] mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-[var(--color-text-primary)]">Timezone</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                All sessions and availability are in <strong>IST (Asia/Kolkata)</strong>.
+              </p>
             </div>
-            <select
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border-primary)] rounded-xl px-4 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-            >
-              <option value="Asia/Kolkata">India Standard Time (IST)</option>
-              <option value="America/New_York">Eastern Time (ET)</option>
-              <option value="Europe/London">Greenwich Mean Time (GMT)</option>
-            </select>
           </div>
         </div>
       </section>

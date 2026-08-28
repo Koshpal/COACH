@@ -121,7 +121,7 @@ export const normalizeSessionsToEvents = (response: any): CalendarEvent[] => {
         company: employee?.company || session.booking?.employee?.company || 'Koshpal',
         startTime: start.toISOString(),
         endTime: end.toISOString(),
-        status: session.status === 'LIVE' || session.isLive ? 'LIVE' : session.status,
+        status: session.isLive ? 'LIVE' : session.status,
         meetingLink: session.meetingLink || session.booking?.meetingLink,
         notes: session.notes || session.coachNotes,
         sessionType: session.meetingLink || session.booking?.meetingLink ? 'Virtual' : 'In-person',

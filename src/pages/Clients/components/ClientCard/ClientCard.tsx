@@ -10,7 +10,13 @@ interface ClientCardProps {
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails, onMessage, onScheduleSession }) => {
-  const initials = (client.firstName?.[0]?.toUpperCase() || '') + (client.lastName?.[0]?.toUpperCase() || '') || '?';
+  const initials = (() => {
+    const parts = client.name?.trim().split(/\s+/).filter(Boolean) || [];
+    if (parts.length === 0) return '?';
+    const first = parts[0][0] || '';
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+    return (first + last).toUpperCase() || '?';
+  })();
   const isActive = !!client.upcomingSession && new Date(client.upcomingSession) > new Date();
 
   return (
@@ -21,7 +27,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails, o
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-lg text-[var(--color-text-primary)] truncate">{client.firstName} {client.lastName}</h3>
+            <h3 className="font-bold text-lg text-[var(--color-text-primary)] truncate">{client.name}</h3>
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${isActive ? 'bg-[var(--color-success)]/15 text-[var(--color-success-darkest)]' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'}`}>
               {isActive ? 'Active' : 'Inactive'}
             </span>

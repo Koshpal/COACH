@@ -1,14 +1,4 @@
-export interface Client {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-  phone?: string;
-  organization?: string;
-  totalSessions?: number;
-  upcomingSession?: string; // ISO date string
-  lastSession?: string; // ISO date string
-}
+// Single source of truth for the client shape.
+export type { Client } from './coach.types';
 
 export type ClientStatus = 'active' | 'inactive';

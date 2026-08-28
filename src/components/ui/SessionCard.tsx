@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Clock, Calendar, Eye, Power } from 'lucide-react';
+import { Video, Clock, Eye, Power } from 'lucide-react';
 
 interface SessionCardProps {
   id: string;
@@ -12,23 +12,21 @@ interface SessionCardProps {
   duration?: string;
   status?: string;
   onJoinSession?: () => void;
-  onReschedule?: () => void;
   onViewDetails?: () => void;
   onEndSession?: () => void;
 }
 
-export const SessionCard: React.FC<SessionCardProps> = ({ 
+export const SessionCard: React.FC<SessionCardProps> = ({
   id,
-  startTime, 
-  endTime, 
-  clientName, 
-  sessionType, 
-  badge, 
-  isVirtual, 
-  duration, 
+  startTime,
+  endTime,
+  clientName,
+  sessionType,
+  badge,
+  isVirtual,
+  duration,
   status,
-  onJoinSession, 
-  onReschedule,
+  onJoinSession,
   onViewDetails,
   onEndSession
 }) => {
@@ -112,18 +110,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           ) : (
             <>
               {isLive ? (
-                <button 
+                <button
                   onClick={onEndSession}
                   className="px-4 py-2 bg-[var(--color-error)] text-white text-xs font-bold rounded-xl hover:opacity-90 shadow-md shadow-red-500/20 transition-all flex items-center gap-1.5"
                 >
                   <Power className="w-4 h-4" /> End Session
                 </button>
               ) : (
-                <button 
-                  onClick={onReschedule}
+                <button
+                  onClick={onViewDetails}
                   className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-xs font-bold rounded-xl border border-[var(--color-border-primary)] hover:bg-[var(--color-bg-tertiary)] transition-all flex items-center gap-1.5"
                 >
-                  <Calendar className="w-4 h-4" /> Reschedule
+                  <Eye className="w-4 h-4" /> View Details
                 </button>
               )}
               <button 

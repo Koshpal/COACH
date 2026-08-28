@@ -16,9 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
 
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : {};
-  const userName = user.firstName 
-    ? `${user.firstName} ${user.lastName}` 
-    : (user.name || user.fullName || user.email?.split('@')[0] || 'Coach');
+  const userName = user.name || user.email?.split('@')[0] || 'Coach';
   const userEmail = user.email || '';
 
   const getInitials = (name: string) => {

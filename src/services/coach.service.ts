@@ -1,13 +1,5 @@
 import api from './api';
-import { 
-  CoachProfile, 
-  Session, 
-  Client, 
-  TimeSlot, 
-  PaymentStats, 
-  Invoice,
-  DashboardSummary 
-} from '../types/coach.types';
+import { CoachProfile, Session, DashboardSummary } from '../types/coach.types';
 
 export const coachService = {
   getProfile: async (): Promise<CoachProfile> => {
@@ -16,8 +8,9 @@ export const coachService = {
   },
 
   updateProfile: async (formData: FormData): Promise<CoachProfile> => {
+    // Let axios derive multipart/form-data + boundary from the FormData body.
     const response = await api.patch('/coach/profile', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     });
     return response.data;
   },
@@ -30,30 +23,6 @@ export const coachService = {
   }> => {
     const response = await api.get('/coach/sessions', { params });
     return response.data;
-  },
-
-  getClients: async (): Promise<Client[]> => {
-    const response = await api.get('/coach/clients');
-    return response.data;
-  },
-
-  getConsultationStats: async (): Promise<any> => {
-    const response = await api.get('/coach/consultations/stats');
-    return response.data;
-  },
-
-  getSlots: async (date?: string): Promise<TimeSlot[]> => {
-    const params = date ? { date } : {};
-    const response = await api.get('/coach/slots', { params });
-    return response.data;
-  },
-
-  createSlots: async (date: string, timeSlots: { startTime: string; endTime: string }[]): Promise<void> => {
-    await api.post('/coach/slots', { date, timeSlots });
-  },
-
-  deleteSlot: async (slotId: string): Promise<void> => {
-    await api.delete(`/coach/slots/${slotId}`);
   },
 
   getDashboardStats: async (): Promise<DashboardSummary> => {
@@ -90,11 +59,6 @@ export const coachService = {
 
   getSessionFeedback: async (sessionId: string): Promise<any> => {
     const response = await api.get(`/sessions/${sessionId}/employee-feedback`);
-    return response.data;
-  },
-
-  updateTimezone: async (timezone: string): Promise<any> => {
-    const response = await api.patch('/coach/profile/timezone', { timezone });
     return response.data;
   },
 

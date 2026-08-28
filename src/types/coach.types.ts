@@ -1,11 +1,12 @@
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  /** Single display name — matches what /auth/me returns. */
+  name?: string;
   role: 'COACH' | 'EMPLOYEE' | 'ADMIN';
+  phone?: string;
+  isActive?: boolean;
   avatar?: string;
-  timezone?: string;
 }
 
 export interface CoachProfile extends User {
@@ -19,12 +20,13 @@ export interface CoachProfile extends User {
 
 export interface Client {
   id: string;
-  firstName: string;
-  lastName: string;
+  /** Single display name — clients come from session data as one `fullName` string. */
+  name: string;
   email: string;
   avatar?: string;
   phone?: string;
   organization?: string;
+  company?: string;
   totalSessions?: number;
   upcomingSession?: string;
   lastSession?: string;
@@ -37,7 +39,9 @@ export interface Session {
   clientAvatar?: string;
   startTime: string;
   endTime: string;
-  status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'AVAILABLE' | 'BOOKED' | 'LIVE';
+  /** Raw booking status. "Live now" is a separate flag. */
+  status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  isLive?: boolean;
   meetingLink?: string;
   notes?: string;
   type: 'INDIVIDUAL' | 'GROUP';
@@ -49,35 +53,13 @@ export interface CalendarEvent {
   company?: string;
   startTime: string;
   endTime: string;
+  // 'LIVE' is synthesized client-side from a session's isLive flag.
   status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'LIVE';
   meetingLink?: string;
   notes?: string;
   sessionType: 'Virtual' | 'In-person';
   clientId: string;
   lane?: number;
-}
-
-export interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  isBooked: boolean;
-  date: string;
-}
-
-export interface WeeklyAvailability {
-  day: string;
-  slots: {
-    startTime: string;
-    endTime: string;
-  }[];
-}
-
-export interface PaymentStats {
-  totalEarnings: number;
-  pendingEarnings: number;
-  completedSessions: number;
-  avgRating: number;
 }
 
 export interface DashboardSummary {
@@ -91,13 +73,4 @@ export interface DashboardSummary {
   todaySessions: Session[];
   upcomingSessions: Session[];
   generatedAt: string;
-}
-
-export interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  date: string;
-  amount: number;
-  status: 'PAID' | 'PENDING' | 'OVERDUE';
-  clientName: string;
 }

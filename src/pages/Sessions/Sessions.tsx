@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, Mail, Star, Calendar, ChevronRight } from 'lucide-react';
 import { SessionCard } from '../../components/ui/SessionCard';
 import { coachService } from '../../services/coach.service';
 import { formatTime, formatDate } from '../../utils/date';
 import { SessionDetailsModal } from '../../components/ui/SessionDetailsModal';
 import { EndSessionModal } from '../../components/ui/EndSessionModal';
-import { RescheduleModal } from '../../components/ui/RescheduleModal';
 
 type TabType = 'Live' | 'Upcoming' | 'History';
 
@@ -19,26 +18,22 @@ export const Sessions: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
-  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchSessions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await coachService.getSessions();
-        if (isMounted) setSessions(data);
-      } catch (err) {
-        console.error('Error fetching sessions:', err);
-        if (isMounted) setError('Failed to load sessions. Please try again.');
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    fetchSessions();
-    return () => { isMounted = false; };
+  const loadSessions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await coachService.getSessions();
+      setSessions(data);
+    } catch (err) {
+      console.error('Error fetching sessions:', err);
+      setError('Failed to load sessions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { loadSessions(); }, [loadSessions]);
 
   const handleOpenDetails = (session: any) => {
     setSelectedSession(session);
@@ -48,11 +43,6 @@ export const Sessions: React.FC = () => {
   const handleOpenEndSession = (session: any) => {
     setSelectedSession(session);
     setIsEndOpen(true);
-  };
-
-  const handleOpenReschedule = (session: any) => {
-    setSelectedSession(session);
-    setIsRescheduleOpen(true);
   };
 
   const filteredSessions = useMemo(() => {
@@ -95,7 +85,7 @@ export const Sessions: React.FC = () => {
         <div className="py-20 text-center bg-[var(--color-bg-card)] rounded-2xl border border-dashed border-[var(--color-border-primary)]">
           <p className="text-[var(--color-error)] font-medium mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={loadSessions}
             className="px-6 py-2 bg-[var(--color-primary)] text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all"
           >
             Retry
@@ -128,7 +118,6 @@ export const Sessions: React.FC = () => {
               isVirtual={true}
               duration="45m"
               onJoinSession={() => window.open(session.meetingLink, '_blank')}
-              onReschedule={() => handleOpenReschedule(session)}
               onEndSession={() => handleOpenEndSession(session)}
               onViewDetails={() => handleOpenDetails(session)}
             />
@@ -148,11 +137,7 @@ export const Sessions: React.FC = () => {
             isOpen={isEndOpen}
             onClose={() => setIsEndOpen(false)}
             session={selectedSession}
-          />
-          <RescheduleModal
-            isOpen={isRescheduleOpen}
-            onClose={() => setIsRescheduleOpen(false)}
-            session={selectedSession}
+            onSuccess={() => { setIsEndOpen(false); loadSessions(); }}
           />
         </>
       )}

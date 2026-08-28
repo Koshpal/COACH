@@ -50,16 +50,13 @@ const deriveClientsFromSessions = (sessionsResponse: any): Client[] => {
     if (!id) return;
 
     const fullName = String(employee?.fullName || session?.clientName || 'Unknown Client').trim();
-    const [firstName = 'Unknown', ...restName] = fullName.split(/\s+/);
-    const lastName = restName.join(' ') || '';
     const sessionDate = parseSessionDateTime(session);
     const sessionTimestamp = sessionDate ? sessionDate.getTime() : null;
 
     const existing = clientsById.get(id);
     const baseClient: Client & { lastSessionAt?: number; nextSessionAt?: number } = existing || {
       id,
-      firstName,
-      lastName,
+      name: fullName,
       email: employee?.email || '',
       avatar: undefined,
       phone: employee?.phone,
@@ -71,8 +68,7 @@ const deriveClientsFromSessions = (sessionsResponse: any): Client[] => {
       nextSessionAt: undefined,
     };
 
-    baseClient.firstName = firstName;
-    baseClient.lastName = lastName;
+    baseClient.name = fullName;
     baseClient.email = employee?.email || baseClient.email;
     baseClient.phone = employee?.phone || baseClient.phone;
     baseClient.organization = employee?.company || baseClient.organization || 'Koshpal';
@@ -139,8 +135,7 @@ export const Clients: React.FC = () => {
 
     const filtered = clients
       .filter((client) => {
-        const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
-        return normalizedSearch ? fullName.includes(normalizedSearch) : true;
+        return normalizedSearch ? client.name.toLowerCase().includes(normalizedSearch) : true;
       })
       .filter((client) => {
         if (status === 'all') return true;

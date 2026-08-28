@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Calendar, Video, Clock, ChevronRight } from 'lucide-react';
 import { StatCard } from '../../components/ui/StatCard';
 import { SessionCard } from '../../components/ui/SessionCard';
@@ -6,7 +6,6 @@ import { coachService } from '../../services/coach.service';
 import { formatTime } from '../../utils/date';
 import { SessionDetailsModal } from '../../components/ui/SessionDetailsModal';
 import { EndSessionModal } from '../../components/ui/EndSessionModal';
-import { RescheduleModal } from '../../components/ui/RescheduleModal';
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
@@ -19,40 +18,32 @@ export const Dashboard: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
-  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const dashboardData = await coachService.getDashboardStats();
-        if (!isMounted) return;
-        setStats(dashboardData);
-        setTodaySessions(dashboardData.todaySessions || []);
-        setUpcomingSessions(dashboardData.upcomingSessions || []);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const dashboardData = await coachService.getDashboardStats();
+      setStats(dashboardData);
+      setTodaySessions(dashboardData.todaySessions || []);
+      setUpcomingSessions(dashboardData.upcomingSessions || []);
 
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          try {
-            const user = JSON.parse(userStr);
-            const name = user.firstName
-              ? `${user.firstName} ${user.lastName}`
-              : (user.name || user.fullName || user.email?.split('@')[0] || 'Coach');
-            setUserName(name);
-          } catch (e) {
-            console.error('Error parsing user from localStorage', e);
-          }
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setUserName(user.name || user.email?.split('@')[0] || 'Coach');
+        } catch (e) {
+          console.error('Error parsing user from localStorage', e);
         }
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-      } finally {
-        if (isMounted) setLoading(false);
       }
-    };
-    fetchData();
-    return () => { isMounted = false; };
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleOpenDetails = (session: any) => {
     setSelectedSession(session);
@@ -62,11 +53,6 @@ export const Dashboard: React.FC = () => {
   const handleOpenEndSession = (session: any) => {
     setSelectedSession(session);
     setIsEndOpen(true);
-  };
-
-  const handleOpenReschedule = (session: any) => {
-    setSelectedSession(session);
-    setIsRescheduleOpen(true);
   };
 
   if (loading) {
@@ -138,7 +124,6 @@ export const Dashboard: React.FC = () => {
                   isVirtual={true}
                   duration="45m"
                   onJoinSession={() => window.open(session.meetingLink, '_blank')}
-                  onReschedule={() => handleOpenReschedule(session)}
                   onEndSession={() => handleOpenEndSession(session)}
                   onViewDetails={() => handleOpenDetails(session)}
                 />
@@ -194,11 +179,7 @@ export const Dashboard: React.FC = () => {
             isOpen={isEndOpen}
             onClose={() => setIsEndOpen(false)}
             session={selectedSession}
-          />
-          <RescheduleModal
-            isOpen={isRescheduleOpen}
-            onClose={() => setIsRescheduleOpen(false)}
-            session={selectedSession}
+            onSuccess={() => { setIsEndOpen(false); fetchData(); }}
           />
         </>
       )}

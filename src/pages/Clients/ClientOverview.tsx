@@ -31,13 +31,8 @@ const formatTime = (value?: string) => {
   return parsedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const getClientDisplayName = (client: ClientOverviewState | null) => {
-  if (!client) return 'Unknown Client';
-  if (client.name) return client.name;
-
-  const fullName = `${client.firstName || ''} ${client.lastName || ''}`.trim();
-  return fullName || 'Unknown Client';
-};
+const getClientDisplayName = (client: ClientOverviewState | null) =>
+  client?.name?.trim() || 'Unknown Client';
 
 const getClientCompany = (client: ClientOverviewState | null) => {
   if (!client) return 'N/A';

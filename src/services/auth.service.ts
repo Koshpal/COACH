@@ -9,11 +9,17 @@ export const authService = {
       role: 'COACH',
     });
 
-    if (response.data.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    // Hydrate from /auth/me so `user` has one consistent shape (name, phone,
+    // isActive) rather than the leaner login-response shape.
+    let user = response.data.user;
+    try {
+      const me = await api.get('/auth/me');
+      if (me.data) user = me.data;
+    } catch {
+      /* fall back to the login response */
     }
-
-    return response.data;
+    if (user) localStorage.setItem('user', JSON.stringify(user));
+    return { ...response.data, user };
   },
 
   logout: async (): Promise<void> => {
@@ -37,7 +43,7 @@ export const authService = {
   },
 
   forgotPassword: async (email: string): Promise<void> => {
-    await api.post('/auth/forgot-password', { email });
+    await api.post('/auth/forgot-password', { email, portal: 'COACH' });
   },
 
   resetPassword: async (token: string, newPassword: string): Promise<void> => {

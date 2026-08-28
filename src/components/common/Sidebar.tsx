@@ -5,7 +5,6 @@ import {
   Users,
   Calendar,
   CalendarCheck,
-  DollarSign,
   X,
   ChevronLeft,
   BookOpen,
@@ -24,7 +23,6 @@ const menuItems = [
   { icon: Users, label: 'Clients', path: '/clients' },
   { icon: Calendar, label: 'Calendar', path: '/calendar' },
   { icon: CalendarCheck, label: 'Availability', path: '/availability' },
-  { icon: DollarSign, label: 'Payments', path: '/payments' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
