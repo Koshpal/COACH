@@ -65,16 +65,16 @@ export const Modal: React.FC<ModalProps> = ({
         {header !== undefined && (
           <div
             className={cn(
-              "relative flex items-start justify-between px-6 py-5",
+              "relative px-6 py-5",
               tones[headerTone],
               pattern && headerTone !== "plain" && "topo-header",
             )}
           >
-            <div className="min-w-0">{header}</div>
+            {header}
             <button
               onClick={onClose}
               className={cn(
-                "ml-4 shrink-0 rounded-md p-1 transition-colors",
+                "absolute right-4 top-4 z-10 rounded-md p-1 transition-colors",
                 headerTone === "plain"
                   ? "text-neutral-400 hover:bg-neutral-100"
                   : "text-white/90 hover:bg-white/15",

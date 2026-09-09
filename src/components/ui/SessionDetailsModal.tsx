@@ -12,6 +12,7 @@ interface Props {
   detail?: SessionDetailData;
   onReschedule?: () => void;
   onJoin?: () => void;
+  onViewProfile?: () => void;
 }
 
 export const SessionDetailsModal: React.FC<Props> = ({
@@ -20,6 +21,7 @@ export const SessionDetailsModal: React.FC<Props> = ({
   detail = sessionDetail,
   onReschedule,
   onJoin,
+  onViewProfile,
 }) => {
   const d = detail;
   return (
@@ -29,7 +31,16 @@ export const SessionDetailsModal: React.FC<Props> = ({
       headerTone="teal"
       pattern
       size="sm"
-      header={<div className="h-12" />}
+      header={
+        <div className="flex justify-center pb-2 pt-2">
+          <Avatar
+            src={d.clientAvatar}
+            name={d.clientName}
+            size={88}
+            className="-mb-12 rounded-full ring-4 ring-white"
+          />
+        </div>
+      }
       footer={
         <>
           <Button
@@ -40,7 +51,7 @@ export const SessionDetailsModal: React.FC<Props> = ({
             Reschedule
           </Button>
           <Button
-            variant="secondary"
+            variant="primary"
             disabled={!onJoin}
             onClick={onJoin}
             iconRight={<ArrowUpRight className="h-4 w-4" />}
@@ -50,27 +61,31 @@ export const SessionDetailsModal: React.FC<Props> = ({
         </>
       }
     >
-      <div className="-mt-14 flex flex-col items-center text-center">
-        <Avatar
-          src={d.clientAvatar}
-          name={d.clientName}
-          size={92}
-          className="rounded-full ring-4 ring-white"
-        />
-        <h3 className="mt-3 font-jakarta text-[22px] font-bold text-neutral-900">
+      <div className="pt-10 text-center">
+        <h3 className="font-jakarta text-[22px] font-bold text-[var(--color-text-primary)]">
           {d.clientName}
         </h3>
-        <p className="font-outfit text-[15px] text-neutral-500">{d.credential}</p>
-        <button className="mt-1 font-jakarta text-[14px] font-medium text-primary-600 underline underline-offset-2">
+        {d.credential && (
+          <p className="font-outfit text-[15px] text-[var(--color-text-secondary)]">
+            {d.credential}
+          </p>
+        )}
+        <button
+          onClick={onViewProfile}
+          disabled={!onViewProfile}
+          className="mt-1 font-jakarta text-[14px] font-medium text-[var(--color-primary)] underline underline-offset-2 disabled:opacity-50"
+        >
           View Profile
         </button>
       </div>
 
-      <div className="mt-6 flex items-center justify-between rounded-md border-y border-neutral-100 py-4 font-outfit text-[15px]">
-        <span className="font-jakarta font-semibold text-primary-600">{d.dateLabel}</span>
-        <span className="text-neutral-700">
+      <div className="mt-6 flex items-center justify-between rounded-md border-y border-[var(--color-border-primary)] py-4 font-outfit text-[15px]">
+        <span className="font-jakarta font-semibold text-[var(--color-primary)]">
+          {d.dateLabel}
+        </span>
+        <span className="text-[var(--color-text-secondary)]">
           {d.weekday}
-          <span className="mx-2 text-neutral-300">|</span>
+          <span className="mx-2 text-[var(--color-text-tertiary)]">|</span>
           {d.timeRange}
         </span>
       </div>

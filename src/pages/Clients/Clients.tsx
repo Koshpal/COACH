@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/common/Header";
-import { Spinner, ErrorState } from "../../components/common/PageState";
+import { ErrorState } from "../../components/common/PageState";
+import { ClientGridSkeleton } from "../../components/common/Skeleton";
 import { ClientCard } from "../../components/ui/ClientCard";
 import { coachService } from "../../services/coach.service";
 import { useAsync } from "../../hooks/useAsync";
@@ -29,8 +30,8 @@ export const Clients: React.FC = () => {
   return (
     <div className="flex flex-col gap-6">
       <Header title="Client's Profile" />
-      {loading && <Spinner label="Loading clients…" />}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {loading && <ClientGridSkeleton count={6} />}
+      {!loading && error && <ErrorState message={error} onRetry={reload} />}
       {!loading && !error && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {clients.map((c) => (

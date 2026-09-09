@@ -1,8 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { LayoutGrid, List, MessageSquare } from "lucide-react";
 import { Header } from "../../components/common/Header";
-import { Spinner, ErrorState } from "../../components/common/PageState";
+import {
+  ClientHeaderSkeleton,
+  SessionListSkeleton,
+  BlockSkeleton,
+  SectionError,
+  Skeleton,
+} from "../../components/common/Skeleton";
 import { Tabs, type TabItem } from "../../components/ui/Tabs";
 import { Button } from "../../components/ui/Button";
 import { ClientProfileHeader } from "../../components/ui/ClientProfileHeader";
@@ -26,14 +32,66 @@ const TAB_ITEMS: TabItem[] = [
   { key: "notes", label: "Notes", icon: <MessageSquare className="h-4 w-4" /> },
 ];
 
+const clientIdOf = (s: ApiSession) =>
+  s.employee?.id ?? s.booking?.employee?.id ?? s.clientId;
+
+/* ── Notes panel — its own API (/sessions/:id/coach-notes) & loader ─── */
+const ClientNotesCard: React.FC<{ latestId: string | null }> = ({ latestId }) => {
+  const [note, setNote] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const { loading, error, reload } = useAsync(async () => {
+    if (!latestId) return "";
+    const n = await coachService.getCoachNote(latestId).catch(() => null);
+    setNote(n?.notes ?? "");
+    return n?.notes ?? "";
+  }, [latestId]);
+
+  const save = async () => {
+    if (!latestId || note == null) return;
+    setSaving(true);
+    try {
+      await coachService.updateSessionNotes(latestId, note, "PRIVATE");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <BlockSkeleton lines={3} className="!border-0 !p-0 !shadow-none" />;
+  if (error)
+    return <SectionError message="Couldn't load notes." onRetry={reload} />;
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="font-jakarta text-[18px] font-semibold text-[var(--color-text-primary)]">
+          Coach Notes
+        </h3>
+        <Button size="sm" onClick={save} loading={saving} disabled={!latestId}>
+          Save note
+        </Button>
+      </div>
+      <textarea
+        value={note ?? ""}
+        onChange={(e) => setNote(e.target.value)}
+        rows={5}
+        placeholder="Notes for the most recent session with this client…"
+        className="w-full resize-none rounded-md border border-[var(--color-border-primary)] p-3 font-outfit text-[14px] text-[var(--color-text-secondary)] focus:border-[var(--color-border-focus)] focus:ring-0"
+      />
+    </div>
+  );
+};
+
 export const ClientOverview: React.FC = () => {
   const { id = "" } = useParams();
   const [tab, setTab] = useState("overview");
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [activeDetail, setActiveDetail] = useState<SessionDetailData>(fallbackDetail);
-  const [note, setNote] = useState("");
-  const [savingNote, setSavingNote] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [activeDetail, setActiveDetail] =
+    useState<SessionDetailData>(fallbackDetail);
 
+  /* Profile + sessions come from one API domain → one loader, but each
+     visual area still renders its own skeleton shape. */
   const { data, loading, error, reload } = useAsync(async () => {
     const [sessions, profile] = await Promise.all([
       coachService.getSessions(),
@@ -48,10 +106,7 @@ export const ClientOverview: React.FC = () => {
   }, [id]);
 
   const mine = useMemo(
-    () =>
-      (data?.all ?? []).filter(
-        (s) => (s.employee?.id ?? s.booking?.employee?.id ?? s.clientId) === id,
-      ),
+    () => (data?.all ?? []).filter((s) => clientIdOf(s) === id),
     [data, id],
   );
   const profile = useMemo(
@@ -65,16 +120,9 @@ export const ClientOverview: React.FC = () => {
     return sorted[0]?.id ?? null;
   }, [mine]);
 
-  useEffect(() => {
-    if (!latestId) return;
-    coachService
-      .getCoachNote(latestId)
-      .then((n) => setNote(n?.notes ?? ""))
-      .catch(() => setNote(""));
-  }, [latestId]);
-
   const openDetail = async (sid: string) => {
     const raw = mine.find((s) => s.id === sid);
+    setActiveSessionId(sid);
     let n = null;
     let fb = null;
     try {
@@ -87,15 +135,14 @@ export const ClientOverview: React.FC = () => {
     setDetailsOpen(true);
   };
 
-  const saveNote = async () => {
-    if (!latestId) return;
-    setSavingNote(true);
-    try {
-      await coachService.updateSessionNotes(latestId, note, "PRIVATE");
-    } finally {
-      setSavingNote(false);
-    }
-  };
+  const HeaderArea = () =>
+    loading ? (
+      <ClientHeaderSkeleton />
+    ) : error || !profile ? (
+      <SectionError message="Couldn't load this client." onRetry={reload} />
+    ) : (
+      <ClientProfileHeader client={profile} />
+    );
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,22 +151,27 @@ export const ClientOverview: React.FC = () => {
         below={<Tabs items={TAB_ITEMS} value={tab} onChange={setTab} />}
       />
 
-      {loading && <Spinner label="Loading client…" />}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      <div className="rounded-[16px] border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-drop-low)]">
+        {tab === "overview" && (
+          <div className="space-y-8">
+            <HeaderArea />
+            {loading ? (
+              <Skeleton className="h-[320px] w-full" />
+            ) : (
+              <ProgressChart sessions={mine} />
+            )}
+          </div>
+        )}
 
-      {profile && (
-        <div className="rounded-lg border border-neutral-100 bg-white p-6 shadow-low">
-          {tab === "overview" && (
-            <div className="space-y-8">
-              <ClientProfileHeader client={profile} />
-              <ProgressChart />
-            </div>
-          )}
-
-          {tab === "sessions" && (
-            <div className="space-y-4">
-              {mine.length ? (
-                mine
+        {tab === "sessions" && (
+          <>
+            {loading ? (
+              <SessionListSkeleton rows={4} />
+            ) : error ? (
+              <SectionError message="Couldn't load sessions." onRetry={reload} />
+            ) : mine.length ? (
+              <div className="space-y-4">
+                {mine
                   .map((s) => toSessionCard(s))
                   .map((card) => (
                     <SessionCard
@@ -128,45 +180,35 @@ export const ClientOverview: React.FC = () => {
                       onViewDetails={() => openDetail(card.id)}
                       onRate={() => openDetail(card.id)}
                     />
-                  ))
-              ) : (
-                <p className="font-outfit text-[14px] text-neutral-400">
-                  No sessions with this client yet.
-                </p>
-              )}
-            </div>
-          )}
-
-          {tab === "notes" && (
-            <div className="space-y-8">
-              <ClientProfileHeader client={profile} />
-              <ProgressChart />
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-jakarta text-[18px] font-semibold text-neutral-900">
-                    Coach Notes
-                  </h3>
-                  <Button size="sm" onClick={saveNote} loading={savingNote} disabled={!latestId}>
-                    Save note
-                  </Button>
-                </div>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={5}
-                  placeholder="Notes for the most recent session with this client…"
-                  className="w-full resize-none rounded-md border border-neutral-200 p-3 font-outfit text-[14px] text-neutral-700 focus:border-primary-400 focus:ring-0"
-                />
+                  ))}
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            ) : (
+              <p className="font-outfit text-[14px] text-[var(--color-text-tertiary)]">
+                No sessions with this client yet.
+              </p>
+            )}
+          </>
+        )}
+
+        {tab === "notes" && (
+          <div className="space-y-8">
+            <HeaderArea />
+            {loading ? (
+              <Skeleton className="h-[320px] w-full" />
+            ) : (
+              <ProgressChart sessions={mine} />
+            )}
+            <ClientNotesCard latestId={latestId} />
+          </div>
+        )}
+      </div>
 
       <SessionEndDetailsModal
         isOpen={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         detail={activeDetail}
+        sessionId={activeSessionId}
+        onSaved={reload}
       />
     </div>
   );

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/common/Header";
-import { Spinner, ErrorState } from "../../components/common/PageState";
+import { ErrorState } from "../../components/common/PageState";
+import { BlockSkeleton, Skeleton } from "../../components/common/Skeleton";
 import { Button } from "../../components/ui/Button";
 import { AvailabilityEditor } from "../../components/ui/AvailabilityEditor";
 import { QuickPresets } from "../../components/ui/QuickPresets";
@@ -76,8 +77,13 @@ export const AvailabilityEdit: React.FC = () => {
         Edit Availability
       </h2>
 
-      {loading && <Spinner label="Loading schedule…" />}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {loading && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+          <BlockSkeleton lines={6} />
+          <Skeleton className="h-[280px] w-full" />
+        </div>
+      )}
+      {!loading && error && <ErrorState message={error} onRetry={reload} />}
 
       {!loading && !error && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">

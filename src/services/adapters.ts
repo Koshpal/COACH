@@ -118,6 +118,7 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
 
   return {
     id: s.id,
+    clientId: c.id,
     clientName: c.fullName ?? "Client",
     clientRole: c.department ?? roleHint ?? DEFAULT_ROLE,
     clientAvatar: s.clientAvatar ?? "",
@@ -129,6 +130,7 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
     rating: s.rating ?? null,
     group,
     meetingLink: s.meetingLink,
+    startTime: s.startTime,
   };
 }
 
@@ -152,17 +154,23 @@ export function toSessionDetail(
           .filter(Boolean)
       : ["Retirement planning", "Finance management"];
 
+  const credential =
+    opts.credential ?? [c.department, c.company].filter(Boolean).join(" | ");
+
   return {
+    clientId: c.id,
+    meetingLink: s.meetingLink ?? "",
     clientName: c.fullName ?? "Client",
-    credential: opts.credential ?? "CFA | 12 years experience",
+    credential,
     clientAvatar: s.clientAvatar ?? "",
     dateLabel: format(start, "MMM dd").toUpperCase(),
     weekday: format(start, "EEEE"),
     timeRange: `${format(start, "hh:mm a")}-${format(end, "hh:mm a")}`,
     longDate: format(start, "MMMM d"),
     topics: topics.length ? topics : ["Retirement planning", "Finance management"],
+    // The backend stores ONE note per session — surface it once as the summary.
     summary: opts.note?.notes ?? "",
-    privateNotes: opts.note?.notes ?? "",
+    privateNotes: "",
     feedback: {
       rating: opts.feedback?.rating ?? 0,
       quote: opts.feedback?.feedbackText ?? "",

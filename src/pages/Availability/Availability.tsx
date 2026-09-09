@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/common/Header";
-import { Spinner, ErrorState } from "../../components/common/PageState";
+import { ErrorState } from "../../components/common/PageState";
+import { CalendarSkeleton } from "../../components/common/Skeleton";
 import { AvailabilityCalendar } from "../../components/ui/AvailabilityCalendar";
 import { coachService } from "../../services/coach.service";
 import { useAsync } from "../../hooks/useAsync";
@@ -27,8 +28,8 @@ export const Availability: React.FC = () => {
   return (
     <div className="flex flex-col gap-6">
       <Header title="Availability" />
-      {loading && <Spinner label="Loading availability…" />}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {loading && <CalendarSkeleton />}
+      {!loading && error && <ErrorState message={error} onRetry={reload} />}
       {month && (
         <AvailabilityCalendar
           month={month}

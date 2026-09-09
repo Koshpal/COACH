@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/common/Header";
-import { Spinner, ErrorState } from "../../components/common/PageState";
+import { ErrorState } from "../../components/common/PageState";
+import { SessionListSkeleton } from "../../components/common/Skeleton";
 import { SegmentedControl } from "../../components/ui/SegmentedControl";
 import { Dropdown } from "../../components/ui/Dropdown";
 import { SessionCard } from "../../components/ui/SessionCard";
@@ -32,6 +34,7 @@ const dedupe = (rows: ApiSession[]) => {
 };
 
 export const Sessions: React.FC = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("Upcoming");
   const [month, setMonth] = useState(MONTHS[0]);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -131,8 +134,8 @@ export const Sessions: React.FC = () => {
         }
       />
 
-      {loading && <Spinner label="Loading sessions…" />}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {loading && <SessionListSkeleton rows={4} />}
+      {!loading && error && <ErrorState message={error} onRetry={reload} />}
 
       {grouped && tab === "Upcoming" && (
         <div>
@@ -221,6 +224,23 @@ export const Sessions: React.FC = () => {
         isOpen={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         detail={activeDetail}
+        onViewProfile={
+          activeDetail.clientId
+            ? () => {
+                setDetailsOpen(false);
+                navigate(`/clients/${activeDetail.clientId}`);
+              }
+            : undefined
+        }
+        onJoin={
+          activeDetail.meetingLink
+            ? () => window.open(activeDetail.meetingLink, "_blank")
+            : undefined
+        }
+        onReschedule={() => {
+          setDetailsOpen(false);
+          navigate("/availability");
+        }}
       />
       <SessionEndFormModal
         isOpen={endFormOpen}
@@ -233,6 +253,8 @@ export const Sessions: React.FC = () => {
         isOpen={endDetailsOpen}
         onClose={() => setEndDetailsOpen(false)}
         detail={activeDetail}
+        sessionId={activeId}
+        onSaved={reload}
       />
     </div>
   );

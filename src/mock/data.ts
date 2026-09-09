@@ -13,6 +13,7 @@ export interface MockCoach {
 
 export interface MockSession {
   id: string;
+  clientId?: string;
   clientName: string;
   clientRole: string;
   clientAvatar: string;
@@ -24,6 +25,8 @@ export interface MockSession {
   rating?: number | null; // null => "Rate now"
   group: "today" | "next-week" | string; // or a year for past
   meetingLink?: string;
+  /** raw ISO start — used for date-range filtering (Day/Week/Month) */
+  startTime?: string;
 }
 
 export interface MockClient {
@@ -135,11 +138,13 @@ export const sessionsCancelled: MockSession[] = [
 
 /* ---- Session detail (modals) ---- */
 export const sessionDetail = {
+  clientId: "1",
+  meetingLink: "",
   clientName: "Parth Jain",
-  credential: "CFA | 12 years experience",
+  credential: "Marketing Manager | Salesforce",
   clientAvatar: AV_1,
   dateLabel: "DEC 15",
-  weekday: "Tuesaday",
+  weekday: "Tuesday",
   timeRange: "10:00 AM-01:00 PM",
   longDate: "December 15",
   topics: ["Retirement planning", "Finance management"],
