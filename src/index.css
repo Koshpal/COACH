@@ -2,580 +2,296 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===========================================================================
+   Koshpal Coach — Design System
+   Shares the exact token system & shell aesthetics of the Employee portal
+   (Figma "Financial Dashboard" library). Semantic token names are stable so
+   components keep working; values point at the Figma palette.
+     Title/Medium     Plus Jakarta Sans SemiBold 24/44
+     Headline/Medium  Plus Jakarta Sans Regular  28/46
+     Body/Medium      Outfit             Regular  16/28
+     Label/2xSmall    Geist              Medium   12/22
+=========================================================================== */
+
 :root {
-  /* Koshpal Primary Colors */
-  --color-primary: #334eac;
-  --color-primary-darkest: #081f5c;
-  --color-primary-mid: #99a6d6;
-  --color-primary-light: #ccd3ea;
-  --color-primary-lightest: #eff1f8;
+  /* ── Primary ─────────────────────────────────────────────────────────── */
+  --color-primary: #334eac;          /* Primary/600 */
+  --color-primary-darkest: #192b63;  /* Primary/800 */
+  --color-primary-mid: #7ea8f8;      /* Primary/300 */
+  --color-primary-light: #d6e2f8;    /* Primary/100 */
+  --color-primary-lightest: #edf2fe; /* Semantic/info/50 */
 
-  /* Koshpal Secondary Colors */
-  --color-secondary: #17a2b8;
-  --color-secondary-darkest: #117a8a;
-  --color-secondary-mid: #2b8997;
-  --color-secondary-light: #7bb5be;
-  --color-secondary-lightest: #eeeeee;
+  /* ── Secondary ───────────────────────────────────────────────────────── */
+  --color-secondary: #00bcd4;
+  --color-secondary-darkest: #044a53;
+  --color-secondary-mid: #0097ab;
+  --color-secondary-light: #cdf4f9;
+  --color-secondary-lightest: #e8fafc;
 
-  /* Koshpal Black/Grey Scale */
+  /* ── Neutral / grey ──────────────────────────────────────────────────── */
   --color-black-darkest: #000000;
-  --color-black-dark: #1a1a1a;
-  --color-black-mid: #262626;
-  --color-black-light: #333333;
-  --color-black-lightest: #4d4d4d;
-  
-  --color-grey-darkest: #666666;
-  --color-grey-dark: #808080;
-  --color-grey-mid: #999999;
-  --color-grey-light: #b3b3b3;
-  --color-grey-lightest: #e0e0e0;
-  
+  --color-black-dark: #181818;
+  --color-black-mid: #303030;
+  --color-black-light: #474747;
+  --color-black-lightest: #5e5e5e;
+
+  --color-grey-darkest: #757575;
+  --color-grey-dark: #919191;
+  --color-grey-mid: #adadad;
+  --color-grey-light: #d4d4d4;
+  --color-grey-lightest: #e4e4e4;
+
   --color-white-darkest: #ffffff;
   --color-white-dark: #fafafa;
-  --color-white-mid: #f5f5f5;
-  --color-white-light: #f0f0f0;
-  --color-white-lightest: #eaeaea;
+  --color-white-mid: #f6f6f6;
+  --color-white-light: #f2f2f2;
+  --color-white-lightest: #e4e4e4;
 
-  /* Semantic Colors - Green */
-  --color-success: #80b597;
-  --color-success-light: #9ac4ab;
-  --color-success-dark: #67a682;
-  --color-success-darkest: #1b7a43;
-  --color-success-bg: rgba(128, 181, 151, 0.2);
+  /* ── Semantic ────────────────────────────────────────────────────────── */
+  --color-success: #4caf50;
+  --color-success-light: #a5d6a7;
+  --color-success-dark: #43a047;
+  --color-success-darkest: #1b3d1c;
+  --color-success-bg: #eefeee;
 
-  /* Semantic Colors - Orange */
-  --color-warning: #f5a038;
-  --color-warning-light: #fcc178;
-  --color-warning-dark: #d47602;
-  --color-warning-bg: rgba(245, 160, 56, 0.2);
+  --color-warning: #ff9800;
+  --color-warning-light: #ffcc80;
+  --color-warning-dark: #f57c00;
+  --color-warning-darkest: #5c3700;
+  --color-warning-bg: #fff9ef;
 
-  /* Semantic Colors - Red */
-  --color-error: #f55a51;
-  --color-error-light: #fa817a;
-  --color-error-dark: #d5332a;
+  --color-error: #f44336;
+  --color-error-light: #ef9a9a;
+  --color-error-dark: #e53935;
+  --color-error-bg: #fdecea;
 
   --color-info: #334eac;
-  --color-info-bg: rgba(23, 162, 184, 0.125);
+  --color-info-bg: #edf2fe;
 
-  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-overlay: rgba(24, 24, 24, 0.5);
 
-  /* Calendar Colors */
-  --color-calendar-today-bg: rgba(74, 94, 175, 0.02);
-  --color-calendar-confirmed-bg: rgba(147, 197, 253, 0.3);
-  --color-calendar-confirmed-border: rgba(59, 130, 246, 0.5);
+  /* Calendar */
+  --color-calendar-today-bg: rgba(51, 78, 172, 0.04);
+  --color-calendar-confirmed-bg: rgba(126, 168, 248, 0.3);
+  --color-calendar-confirmed-border: rgba(51, 78, 172, 0.5);
   --color-calendar-confirmed-text: #334eac;
-  --color-calendar-completed-bg: rgba(134, 239, 172, 0.3);
-  --color-calendar-completed-border: rgba(34, 197, 94, 0.5);
-  --color-calendar-completed-text: #15803d;
-  --color-calendar-pending-bg: rgba(251, 191, 36, 0.3);
-  --color-calendar-pending-border: rgba(245, 158, 11, 0.5);
-  --color-calendar-pending-text: #b45309;
+  --color-calendar-completed-bg: rgba(76, 175, 80, 0.24);
+  --color-calendar-completed-text: #1b3d1c;
+  --color-calendar-pending-bg: rgba(255, 152, 0, 0.24);
+  --color-calendar-pending-text: #5c3700;
 
-  /* Background Colors - Light Mode */
+  /* ── Backgrounds — Light ────────────────────────────────────────────── */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-bg-tertiary: #f3f4f6;
+  --color-bg-secondary: #f6f6f6;   /* app canvas */
+  --color-bg-tertiary: #f2f2f2;
   --color-bg-card: #ffffff;
 
-  /* Text Colors - Light Mode */
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-tertiary: #9ca3af;
+  /* ── Text — Light ──────────────────────────────────────────────────── */
+  --color-text-primary: #181818;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #919191;
   --color-text-inverse: #ffffff;
 
-  /* Border Colors - Light Mode */
-  --color-border-primary: #e5e7eb;
-  --color-border-secondary: #d1d5db;
-  --color-border-focus: #3b82f6;
+  /* ── Border — Light ────────────────────────────────────────────────── */
+  --color-border-primary: #e4e4e4;
+  --color-border-secondary: #d4d4d4;
+  --color-border-focus: #548bf5;
 
-  /* Input Colors - Light Mode */
+  /* ── Input — Light ─────────────────────────────────────────────────── */
   --color-input-bg: #ffffff;
-  --color-input-border: #d1d5db;
-  --color-input-text: #111827;
-  --color-input-placeholder: #9ca3af;
+  --color-input-border: #e4e4e4;
+  --color-input-text: #181818;
+  --color-input-placeholder: #919191;
 
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  --spacing-3xl: 4rem;
+  /* Aliases used by the shared coach components */
+  --surface: #f6f6f6;
+  --surface-muted: #f2f2f2;
+  --surface-card: #ffffff;
+  --border-subtle: #e4e4e4;
+  --text-strong: #181818;
+  --text-muted: #5e5e5e;
+  --color-success-dark-2: #337636;
 
-  /* Border Radius */
-  --radius-sm: 0.25rem;
+  /* Radius — Figma: 8 cards/buttons, 16 tiles, 20 pills */
+  --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  --radius-2xl: 1.25rem;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Shadows — Figma effects */
+  --shadow-drop-low: 2px 2px 7px 0 rgba(65, 74, 83, 0.08);
+  --shadow-soft: 0 4px 30px 0 rgba(46, 45, 116, 0.1);
+  --shadow-low: 2px 2px 7px 0 rgba(65, 74, 83, 0.08);
+  --shadow-medium: 0 4px 20px 0 rgba(46, 45, 116, 0.08);
+  --shadow-high: 0 8px 40px 0 rgba(46, 45, 116, 0.16);
 
-  /* Typography - Koshpal Design System */
-  --font-family-primary: 'Outfit';
-  --font-family-secondary: 'Plus Jakarta Sans';
+  /* Typography families */
+  --font-family-primary: "Plus Jakarta Sans";
+  --font-family-secondary: "Outfit";
+  --font-family-label: "Geist";
+  --font-family-grotesque: "Space Grotesk", "PP Neue Montreal";
 
-  /* Transitions */
-  --transition-fast: 150ms ease-in-out;
   --transition-base: 200ms ease-in-out;
-  --transition-slow: 300ms ease-in-out;
 
-  /* Z-Index */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-
-  /* Sidebar Dimensions */
-  --sidebar-width: 288px;
-  --sidebar-collapsed-width: 80px;
-  --header-height: 89px;
+  /* Shell */
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 88px;
+  --header-height: 80px;
 }
 
-/* Dark Mode */
-[data-theme='dark'] {
+/* ── Dark Mode ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
   --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-bg-card: #1e293b;
+  --color-bg-secondary: #0b1120;
+  --color-bg-tertiary: #1e293b;
+  --color-bg-card: #131c31;
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #94a3b8;
+  --color-text-primary: #f4f5f7;
+  --color-text-secondary: #b8c0cc;
+  --color-text-tertiary: #8a93a3;
   --color-text-inverse: #0f172a;
 
-  --color-border-primary: #334155;
-  --color-border-secondary: #475569;
-  --color-border-focus: #60a5fa;
+  --color-border-primary: #273244;
+  --color-border-secondary: #3a475c;
+  --color-border-focus: #7ea8f8;
 
-  --color-input-bg: #1e293b;
-  --color-input-border: #475569;
-  --color-input-text: #f1f5f9;
-  --color-input-placeholder: #94a3b8;
+  --color-input-bg: #131c31;
+  --color-input-border: #3a475c;
+  --color-input-text: #f4f5f7;
+  --color-input-placeholder: #8a93a3;
 
-  --color-primary: #60a5fa;
-  --color-primary-darkest: #1e40af;
-  --color-primary-mid: #93c5fd;
-  --color-primary-light: #dbeafe;
-  --color-primary-lightest: #eff6ff;
+  --color-primary: #7ea8f8;
+  --color-primary-darkest: #192b63;
+  --color-primary-mid: #548bf5;
+  --color-primary-light: #22345f;
+  --color-primary-lightest: #1a2547;
 
-  --color-secondary: #22d3ee;
-  --color-secondary-darkest: #0891b2;
-  --color-secondary-mid: #67e8f9;
-  --color-secondary-light: #a5f3fc;
-  --color-secondary-lightest: #ecfeff;
+  --color-success-bg: rgba(76, 175, 80, 0.16);
+  --color-warning-bg: rgba(255, 152, 0, 0.16);
+  --color-error-bg: rgba(244, 67, 54, 0.16);
+  --color-info-bg: rgba(126, 168, 248, 0.14);
+  --color-overlay: rgba(0, 0, 0, 0.6);
 
-  --color-black-darkest: #ffffff;
-  --color-black-dark: #f1f5f9;
-  --color-black-mid: #e2e8f0;
-  --color-black-light: #cbd5e1;
-  --color-black-lightest: #94a3b8;
-  
-  --color-grey-darkest: #f1f5f9;
-  --color-grey-dark: #e2e8f0;
-  --color-grey-mid: #cbd5e1;
-  --color-grey-light: #94a3b8;
-  --color-grey-lightest: #475569;
-  
-  --color-white-darkest: #0f172a;
-  --color-white-dark: #1e293b;
-  --color-white-mid: #334155;
-  --color-white-light: #475569;
-  --color-white-lightest: #64748b;
-
-  --color-success: #34d399;
-  --color-success-light: #6ee7b7;
-  --color-success-dark: #10b981;
-  --color-success-darkest: #047857;
-  --color-success-bg: rgba(16, 185, 129, 0.2);
-
-  --color-warning: #fbbf24;
-  --color-warning-light: #fcd34d;
-  --color-warning-dark: #f59e0b;
-  --color-warning-bg: rgba(251, 191, 36, 0.2);
-
-  --color-error: #f87171;
-  --color-error-light: #fca5a5;
-  --color-error-dark: #ef4444;
-
-  --color-info: #60a5fa;
-  --color-info-bg: rgba(96, 165, 250, 0.125);
-
-  --color-overlay: rgba(0, 0, 0, 0.5);
-
-  /* Calendar Colors */
-  --color-calendar-today-bg: rgba(96, 165, 250, 0.02);
-  --color-calendar-confirmed-bg: rgba(147, 197, 253, 0.3);
-  --color-calendar-confirmed-border: rgba(59, 130, 246, 0.5);
-  --color-calendar-confirmed-text: #60a5fa;
-  --color-calendar-completed-bg: rgba(134, 239, 172, 0.3);
-  --color-calendar-completed-border: rgba(34, 197, 94, 0.5);
-  --color-calendar-completed-text: #10b981;
-  --color-calendar-pending-bg: rgba(251, 191, 36, 0.3);
-  --color-calendar-pending-border: rgba(245, 158, 11, 0.5);
-  --color-calendar-pending-text: #f59e0b;
+  --surface: #0b1120;
+  --surface-muted: #1e293b;
+  --surface-card: #131c31;
+  --border-subtle: #273244;
+  --text-strong: #f4f5f7;
+  --text-muted: #b8c0cc;
 }
 
-/* Base Typography Styles */
+/* ── Global UI scale — render the Figma design slightly smaller everywhere ── */
+:root {
+  --ui-scale: 0.9;
+  zoom: var(--ui-scale);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+html { -webkit-font-smoothing: antialiased; }
 body {
-  font-family: var(--font-family-secondary);
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.25rem;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-primary);
-}
-
-/* Typography Utility Classes */
-.text-h1 {
-  font-family: 'Outfit';
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 2.5rem;
-  letter-spacing: -0.01em;
-}
-
-.text-h2 {
-  font-family: 'Outfit';
-  font-size: 1.75rem;
-  font-weight: 600;
-  line-height: 2.25rem;
-}
-
-.text-h3 {
-  font-family: 'Outfit';
-  font-size: 1.375rem;
-  font-weight: 600;
-  line-height: 1.875rem;
-}
-
-.text-h4 {
-  font-family: 'Outfit';
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.625rem;
-  letter-spacing: 0.01em;
-}
-
-.text-h5 {
-  font-family: 'Outfit';
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5rem;
-  letter-spacing: 0.01em;
-}
-
-.text-h6 {
-  font-family: 'Outfit';
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-  letter-spacing: 0.02em;
-}
-
-.text-subtitle {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25rem;
-  letter-spacing: 0.01em;
-}
-
-.text-body-lg {
-  font-family: 'Plus Jakarta Sans';
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
   font-size: 1rem;
   font-weight: 400;
-  line-height: 1.5rem;
-  letter-spacing: 0.01em;
-}
-
-.text-body-md {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.25rem;
-  letter-spacing: 0.01em;
-}
-
-.text-body-sm {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.125rem;
-  letter-spacing: 0.02em;
-}
-
-.text-label {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1rem;
-  letter-spacing: 0.04em;
-}
-
-.text-caption {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.6875rem;
-  font-weight: 400;
-  line-height: 1rem;
-  letter-spacing: 0.02em;
-}
-
-.text-overline {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.text-button {
-  font-family: 'Plus Jakarta Sans';
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25rem;
-  letter-spacing: 0.06em;
-}
-
-.text-mono-numeric {
-  font-family: 'Outfit';
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Responsive Typography - Tablet (768px - 1023px) */
-@media (max-width: 1023px) and (min-width: 768px) {
-  .text-h1 {
-    font-size: 1.75rem;
-    line-height: 2.25rem;
-  }
-
-  .text-h2 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-  }
-
-  .text-h3 {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-  }
-
-  .text-h4 {
-    font-size: 1rem;
-    line-height: 1.5rem;
-  }
-}
-
-/* Responsive Typography - Mobile (<768px) */
-@media (max-width: 767px) {
-  .text-h1 {
-    font-size: 1.375rem;
-    line-height: 1.75rem;
-    letter-spacing: 0;
-  }
-
-  .text-h2 {
-    font-size: 1.25rem;
-    line-height: 1.625rem;
-  }
-
-  .text-h3 {
-    font-size: 1.125rem;
-    line-height: 1.5rem;
-    letter-spacing: 0.01em;
-  }
-
-  .text-h4 {
-    font-size: 1rem;
-    line-height: 1.375rem;
-  }
-}
-
-/* Utility classes */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Utility classes for using CSS variables */
-.bg-primary {
-  background-color: var(--color-primary);
-}
-
-.bg-secondary {
-  background-color: var(--color-secondary);
-}
-
-.text-primary {
-  color: var(--color-primary);
-}
-
-.text-secondary {
-  color: var(--color-secondary);
-}
-
-.border-primary {
-  border-color: var(--color-primary);
-}
-
-.border-secondary {
-  border-color: var(--color-secondary);
-}
-
-/* Smooth transitions for theme changes — scoped to layout elements only to avoid
-   performance issues from applying transitions to every DOM element */
-body,
-header,
-aside,
-nav,
-main,
-footer,
-section,
-article,
-.bg-card,
-[class*="bg-[var(--color-bg"],
-[class*="bg-[var(--color-primary"],
-[class*="bg-[var(--color-secondary"],
-[class*="border-[var(--color"],
-[class*="text-[var(--color"] {
-  transition: background-color var(--transition-base), color var(--transition-base),
-    border-color var(--transition-base);
-}
-
-/* Remove outline from chart elements */
-.recharts-wrapper,
-.recharts-surface,
-.recharts-wrapper *,
-.recharts-surface * {
-  outline: none !important;
-}
-
-.recharts-wrapper:focus,
-.recharts-surface:focus,
-.recharts-wrapper *:focus,
-.recharts-surface *:focus {
-  outline: none !important;
-}
-
-/* Global Font Rules */
-/* All headings use Outfit */
-h1, h2, h3, h4, h5, h6,
-.font-heading,
-[class*="text-h"],
-[class*="text-display"] {
-  font-family: 'Outfit', sans-serif !important;
-}
-
-/* All body text, paragraphs, spans, and other text use Plus Jakarta Sans */
-body, p, span, a, button, input, textarea, select, label, div,
-.font-body,
-[class*="text-body"],
-[class*="text-subtitle"],
-[class*="text-button"],
-[class*="text-label"],
-[class*="text-caption"] {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* Ensure buttons are bold/semibold */
-button {
-  font-weight: 600;
-}
-
-/* Ensure font-semibold and font-bold use appropriate weights */
-.font-semibold {
-  font-weight: 600;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-/* Markdown preview renderer */
-.markdown-preview h1,
-.markdown-preview h2,
-.markdown-preview h3,
-.markdown-preview h4 {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
+  line-height: 1.75rem;
+  background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
-  margin-top: 1.25em;
-  margin-bottom: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; }
+
+/* ===========================================================================
+   Typography utilities — one class per Figma text style
+=========================================================================== */
+.text-title-lg  { font-family: "Plus Jakarta Sans"; font-size: 2rem;    font-weight: 600; line-height: 2.75rem; letter-spacing: -0.01em; }
+.text-title-md  { font-family: "Plus Jakarta Sans"; font-size: 1.5rem;  font-weight: 600; line-height: 2.75rem; }
+.text-title-sm  { font-family: "Plus Jakarta Sans"; font-size: 1.25rem; font-weight: 600; line-height: 2rem; }
+.text-title-xs  { font-family: "Plus Jakarta Sans"; font-size: 1.125rem;font-weight: 600; line-height: 2rem; }
+.text-title-2xs { font-family: var(--font-family-grotesque), "Plus Jakarta Sans"; font-size: 1rem; font-weight: 500; line-height: 1.875rem; }
+
+.text-headline-md { font-family: "Plus Jakarta Sans"; font-size: 1.75rem; font-weight: 400; line-height: 2.875rem; }
+.text-headline-xs { font-family: "Plus Jakarta Sans"; font-size: 1rem;    font-weight: 400; line-height: 1.625rem; }
+
+.text-body-lg  { font-family: "Outfit"; font-size: 1.25rem;  font-weight: 400; line-height: 2.25rem; }
+.text-body-md  { font-family: "Outfit"; font-size: 1rem;     font-weight: 400; line-height: 1.75rem; }
+.text-body-sm  { font-family: "Outfit"; font-size: 0.875rem; font-weight: 400; line-height: 1.5rem; }
+.text-body-xs  { font-family: "Geist";  font-size: 0.75rem;  font-weight: 400; line-height: 1.375rem; }
+.text-body-2xs { font-family: "Outfit"; font-size: 0.625rem; font-weight: 400; line-height: 1.125rem; }
+
+.text-label-lg  { font-family: "Geist"; font-size: 1.5rem;  font-weight: 600; line-height: 2rem; }
+.text-label-2xs { font-family: "Geist"; font-size: 0.75rem; font-weight: 500; line-height: 1.375rem; }
+
+/* Back-compat aliases */
+.text-h1 { font-family: "Plus Jakarta Sans"; font-size: 2rem;     font-weight: 600; line-height: 2.75rem; letter-spacing: -0.01em; }
+.text-h2 { font-family: "Plus Jakarta Sans"; font-size: 1.5rem;   font-weight: 600; line-height: 2.25rem; }
+.text-h3 { font-family: "Plus Jakarta Sans"; font-size: 1.25rem;  font-weight: 600; line-height: 1.875rem; }
+.text-h4 { font-family: "Plus Jakarta Sans"; font-size: 1.125rem; font-weight: 600; line-height: 1.75rem; }
+.text-h5 { font-family: "Plus Jakarta Sans"; font-size: 1rem;     font-weight: 600; line-height: 1.5rem; }
+.text-h6 { font-family: "Plus Jakarta Sans"; font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; letter-spacing: 0.01em; }
+.text-subtitle { font-family: "Plus Jakarta Sans"; font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; letter-spacing: 0.01em; }
+.text-label { font-family: "Geist"; font-size: 0.75rem; font-weight: 600; line-height: 1rem; letter-spacing: 0.04em; }
+.text-caption { font-family: "Geist"; font-size: 0.75rem; font-weight: 400; line-height: 1.375rem; }
+.text-button { font-family: "Outfit"; font-size: 0.875rem; font-weight: 600; line-height: 1.5rem; letter-spacing: 0.01em; }
+
+/* ── Global font rules ────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6,
+.font-heading, .font-jakarta,
+[class*="text-h"], [class*="text-title"], [class*="text-headline"], [class*="text-display"] {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+body, p, span, a, button, input, textarea, select, label, div,
+.font-body, .font-outfit,
+[class*="text-body-lg"], [class*="text-body-md"], [class*="text-body-sm"],
+[class*="text-body-2xs"], [class*="text-subtitle"] {
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+.font-label, .font-geist,
+[class*="text-body-xs"], [class*="text-label"], [class*="text-caption"] {
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+}
+.font-grotesque, [class*="text-title-2xs"] {
+  font-family: "Space Grotesk", "PP Neue Montreal", ui-sans-serif, system-ui, sans-serif;
+}
+button { font-weight: 600; }
+
+/* ── Entrance animations ──────────────────────────────────────────────── */
+@keyframes kp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kp-slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes kp-scale-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.animate-fade-in  { animation: kp-fade-in 0.3s ease-out both; }
+.animate-slide-up { animation: kp-slide-up 0.35s ease-out both; }
+.animate-scale-in { animation: kp-scale-in 0.25s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-slide-up, .animate-scale-in { animation: none; }
+}
+
+/* ── Utilities ───────────────────────────────────────────────────────── */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.topo-header {
+  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.14) 0, transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.1) 0, transparent 40%);
+}
+.bg-app { background-color: var(--color-bg-secondary); }
+.bg-card { background-color: var(--color-bg-card); }
+.recharts-wrapper:focus, .recharts-surface:focus,
+.recharts-wrapper *:focus, .recharts-surface *:focus { outline: none !important; }
+
+/* Markdown preview (notes) */
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3, .markdown-preview h4 {
+  font-family: "Plus Jakarta Sans", sans-serif; font-weight: 700; color: var(--color-text-primary);
+  margin-top: 1.25em; margin-bottom: 0.5em;
 }
 .markdown-preview h1 { font-size: 1.35rem; }
 .markdown-preview h2 { font-size: 1.15rem; }
 .markdown-preview h3 { font-size: 1rem; }
-.markdown-preview p {
-  color: var(--color-text-secondary);
-  margin-bottom: 0.75em;
-  line-height: 1.7;
-}
-.markdown-preview ul,
-.markdown-preview ol {
-  color: var(--color-text-secondary);
-  padding-left: 1.5rem;
-  margin-bottom: 0.75em;
-}
+.markdown-preview p { color: var(--color-text-secondary); margin-bottom: 0.75em; line-height: 1.7; }
+.markdown-preview ul, .markdown-preview ol { color: var(--color-text-secondary); padding-left: 1.5rem; margin-bottom: 0.75em; }
 .markdown-preview ul { list-style-type: disc; }
 .markdown-preview ol { list-style-type: decimal; }
 .markdown-preview li { margin-bottom: 0.25em; line-height: 1.6; }
 .markdown-preview strong { color: var(--color-text-primary); font-weight: 700; }
-.markdown-preview em { font-style: italic; }
-.markdown-preview code {
-  background: var(--color-bg-tertiary);
-  color: var(--color-primary);
-  font-family: 'Fira Code', 'Menlo', monospace;
-  font-size: 0.8em;
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-}
-.markdown-preview pre {
-  background: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: 10px;
-  padding: 1rem;
-  overflow-x: auto;
-  margin-bottom: 1em;
-}
-.markdown-preview pre code {
-  background: none;
-  padding: 0;
-  color: var(--color-text-primary);
-  font-size: 0.85em;
-}
-.markdown-preview blockquote {
-  border-left: 3px solid var(--color-primary);
-  padding-left: 1rem;
-  color: var(--color-text-tertiary);
-  font-style: italic;
-  margin: 0.75em 0;
-}
-.markdown-preview hr {
-  border: none;
-  border-top: 1px solid var(--color-border-primary);
-  margin: 1.25em 0;
-}
-.markdown-preview a {
-  color: var(--color-primary);
-  text-decoration: underline;
-}
+.markdown-preview a { color: var(--color-primary); text-decoration: underline; }
 .markdown-preview > *:first-child { margin-top: 0; }
 .markdown-preview > *:last-child { margin-bottom: 0; }

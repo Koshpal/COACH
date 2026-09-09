@@ -84,8 +84,8 @@ export const Login: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 bg-[var(--color-bg-secondary)]">
       <div className="relative w-full max-w-md p-6 shadow-lg rounded-2xl sm:p-8 bg-[var(--color-bg-card)] shadow-[var(--shadow-lg)]">
         <div className="flex items-center gap-2 mb-6 sm:mb-8">
-          <img src="/logo.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <span className="text-lg font-bold sm:text-xl text-[var(--color-text-primary)]">
+          <img src="/logo-removebg.png" alt="logo" className="w-8 h-8 object-contain" />
+          <span className="font-jakarta text-xl font-bold text-neutral-900">
             Koshpal
           </span>
         </div>
@@ -170,7 +170,7 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full font-semibold py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-[var(--color-text-inverse)] shadow-[var(--shadow-md)] bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]"
+            className="w-full font-jakarta font-semibold py-3 text-sm sm:text-base rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-white bg-primary-600 hover:bg-primary-700"
           >
             {loading ? (
               <>

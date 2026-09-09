@@ -1,138 +1,110 @@
-import React from 'react';
-import { Video, Clock, Eye, Power } from 'lucide-react';
+import React from "react";
+import { Clock, ArrowUpRight } from "lucide-react";
+import { cn } from "../../lib/cn";
+import { DateChip } from "./DateChip";
+import { RatingPill } from "./RatingPill";
+import type { MockSession } from "../../mock/data";
 
 interface SessionCardProps {
-  id: string;
-  startTime: string;
-  endTime: string;
-  clientName: string;
-  sessionType: string;
-  badge: string;
-  isVirtual?: boolean;
-  duration?: string;
-  status?: string;
-  onJoinSession?: () => void;
-  onViewDetails?: () => void;
-  onEndSession?: () => void;
+  session: MockSession;
+  onViewDetails?: (s: MockSession) => void;
+  onJoin?: (s: MockSession) => void;
+  onRate?: (s: MockSession) => void;
+  onEnd?: (s: MockSession) => void;
+  /** render the live "● 0:03 / End Session" treatment instead of Join */
+  live?: boolean;
+  liveTimer?: string;
+  className?: string;
+  /** dim the card (used behind modals in the Figma frames) */
+  muted?: boolean;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
-  id,
-  startTime,
-  endTime,
-  clientName,
-  sessionType,
-  badge,
-  isVirtual,
-  duration,
-  status,
-  onJoinSession,
+  session,
   onViewDetails,
-  onEndSession
+  onJoin,
+  onRate,
+  onEnd,
+  live,
+  liveTimer = "0:03",
+  className,
+  muted,
 }) => {
-  const initials = (() => {
-    const parts = clientName?.trim().split(/\s+/) || [];
-    if (parts.length === 0) return 'C';
-    const first = parts[0][0];
-    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
-    return (first + last).toUpperCase();
-  })();
-  
-  const getBadgeStyle = () => {
-    if (badge === 'Confirmed' || status === 'CONFIRMED') {
-      return 'bg-[var(--color-info-bg)] text-[var(--color-secondary)] border-[var(--color-secondary)]';
-    }
-    if (status === 'COMPLETED') {
-      return 'bg-[var(--color-success-bg)] text-[var(--color-success-darkest)] border-[var(--color-success)]';
-    }
-    return 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border-[var(--color-border-primary)]';
-  };
-
-  const isLive = status === 'LIVE' || (badge === 'Confirmed' && new Date() >= new Date(startTime) && new Date() <= new Date(endTime));
+  const showJoin = session.status === "ready" && !live;
+  const isPast = session.status === "past";
 
   return (
-    <div className="rounded-2xl py-4 px-5 border hover:shadow-lg transition-all bg-[var(--color-bg-card)] border-[var(--color-border-primary)] group">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-        {/* Time Section */}
-        <div className="flex flex-col items-center min-w-[80px]">
-          <div className="text-sm font-bold text-[var(--color-text-primary)]">{startTime}</div>
-          <div className="w-[1px] h-6 bg-[var(--color-border-primary)] my-1"></div>
-          <div className="text-sm font-medium text-[var(--color-text-secondary)]">{endTime}</div>
-        </div>
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-x-4 gap-y-3 rounded-md border border-neutral-100 bg-white px-4 py-3.5 shadow-low",
+        muted && "opacity-60",
+        className,
+      )}
+    >
+      <DateChip month={session.month} day={session.day} />
 
-        {/* Client Avatar */}
-        <div className="hidden sm:flex rounded-full items-center justify-center w-12 h-12 bg-[var(--color-primary-lightest)] text-[var(--color-primary)] font-bold text-sm shadow-sm">
-          {initials}
-        </div>
+      <div className="h-14 w-px shrink-0 bg-neutral-100" />
 
-        {/* Session Details */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.1em]">Employee</span>
-              <h4 className="text-lg font-bold text-[var(--color-text-primary)] font-heading truncate">
-                {clientName || 'Unassigned'}
-              </h4>
-            </div>
-            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle()}`}>
-              {status || badge}
-            </span>
-          </div>
-          
-          <div className="mt-2 flex flex-col">
-            <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.1em]">Session Type</span>
-            <p className="text-sm font-medium text-[var(--color-primary)]">{sessionType}</p>
-          </div>
+      <div className="min-w-[140px] shrink-0">
+        <p className="font-jakarta text-[16px] font-semibold leading-tight text-neutral-900">
+          {session.clientName}
+        </p>
+        <p className="font-outfit text-[14px] text-neutral-500">{session.clientRole}</p>
+      </div>
 
-          <div className="flex flex-wrap gap-2 mt-2">
-            {isVirtual && (
-              <div className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-md gap-1 text-[var(--color-secondary)] bg-[var(--color-info-bg)] border border-[var(--color-secondary)/20]">
-                <Video className='h-3 w-3' /> <span>VIRTUAL</span>
-              </div>
-            )}
-            {duration && (
-              <div className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-md gap-1 text-[var(--color-warning)] bg-[var(--color-warning-bg)] border border-[var(--color-warning)/20]">
-                <Clock className='h-3 w-3' /> <span>{duration}</span>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="flex h-11 shrink-0 items-center gap-2 rounded-md border border-neutral-200 px-3">
+        <Clock className="h-4 w-4 shrink-0 text-primary-600" />
+        <span className="whitespace-nowrap font-outfit text-[13px] text-neutral-700">
+          {session.weekday}
+          <span className="mx-1 text-neutral-300">·</span>
+          {session.timeRange}
+        </span>
+      </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {status === 'COMPLETED' ? (
-            <button 
-              onClick={onViewDetails}
-              className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-xs font-bold rounded-xl border border-[var(--color-border-primary)] hover:bg-[var(--color-bg-tertiary)] transition-all flex items-center gap-1.5"
-            >
-              <Eye className="w-4 h-4" /> View Details
-            </button>
+      <div className="ml-auto flex items-center gap-4 sm:gap-6">
+        {isPast &&
+          (session.rating != null ? (
+            <RatingPill value={session.rating} />
           ) : (
-            <>
-              {isLive ? (
-                <button
-                  onClick={onEndSession}
-                  className="px-4 py-2 bg-[var(--color-error)] text-white text-xs font-bold rounded-xl hover:opacity-90 shadow-md shadow-red-500/20 transition-all flex items-center gap-1.5"
-                >
-                  <Power className="w-4 h-4" /> End Session
-                </button>
-              ) : (
-                <button
-                  onClick={onViewDetails}
-                  className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-xs font-bold rounded-xl border border-[var(--color-border-primary)] hover:bg-[var(--color-bg-tertiary)] transition-all flex items-center gap-1.5"
-                >
-                  <Eye className="w-4 h-4" /> View Details
-                </button>
-              )}
-              <button 
-                onClick={onJoinSession}
-                className="px-6 py-2 bg-[var(--color-primary)] text-[var(--color-text-inverse)] text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:opacity-90 transition-all"
-              >
-                Join
-              </button>
-            </>
-          )}
-        </div>
+            <button
+              onClick={() => onRate?.(session)}
+              className="h-8 rounded-md bg-neutral-50 px-3 font-jakarta text-[13px] font-semibold text-primary-600 hover:bg-neutral-100"
+            >
+              Rate now
+            </button>
+          ))}
+
+        <button
+          onClick={() => onViewDetails?.(session)}
+          className="font-jakarta text-[14px] font-medium text-primary-600 underline underline-offset-2 hover:text-primary-700"
+        >
+          View Details
+        </button>
+
+        {showJoin && (
+          <button
+            onClick={() => onJoin?.(session)}
+            className="inline-flex h-11 items-center gap-2 rounded-md bg-primary-600 px-5 font-jakarta text-[14px] font-semibold text-white hover:bg-primary-700"
+          >
+            Join Session
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
+        )}
+
+        {live && (
+          <>
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-success-50 px-2.5 h-8 font-jakarta text-[13px] font-semibold text-success-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-success-500" />
+              {liveTimer}
+            </span>
+            <button
+              onClick={() => onEnd?.(session)}
+              className="inline-flex h-11 items-center rounded-md border border-error-300 px-5 font-jakarta text-[14px] font-semibold text-error-600 hover:bg-error-50"
+            >
+              End Session
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

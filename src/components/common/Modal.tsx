@@ -1,70 +1,97 @@
-import React, { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import React, { useEffect } from "react";
+import { X } from "lucide-react";
+import { cn } from "../../lib/cn";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  /** rendered inside the coloured header band */
+  header?: React.ReactNode;
+  headerTone?: "indigo" | "teal" | "plain";
+  /** sticky footer (buttons) */
+  footer?: React.ReactNode;
+  size?: "sm" | "md" | "lg";
+  /** header pattern overlay (View Details / end-session modals) */
+  pattern?: boolean;
+  className?: string;
 }
+
+const sizes = { sm: "max-w-md", md: "max-w-[560px]", lg: "max-w-2xl" };
+const tones = {
+  indigo: "bg-primary-600 text-white",
+  teal: "bg-secondary-700 text-white",
+  plain: "bg-white text-neutral-900 border-b border-neutral-100",
+};
 
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
-  title,
   children,
-  size = 'md'
+  header,
+  headerTone = "plain",
+  footer,
+  size = "md",
+  pattern,
+  className,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", onKey);
     }
-
     return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-[95vw]'
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div 
-        ref={modalRef}
-        className={`w-full ${sizeClasses[size]} bg-[var(--color-bg-card)] rounded-3xl shadow-2xl overflow-hidden border border-[var(--color-border-primary)] animate-scale-in`}
+    <div
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-neutral-900/45 p-4 py-10 animate-fade-in"
+      onClick={onClose}
+    >
+      <div
         onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "w-full overflow-hidden rounded-xl bg-white shadow-high animate-scale-in",
+          sizes[size],
+          className,
+        )}
       >
-        <header className="flex items-center justify-between p-6 border-b border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)]">
-          <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-heading">
-            {title}
-          </h2>
-          <button 
-            onClick={onClose}
-            className="p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-xl transition-all"
+        {header !== undefined && (
+          <div
+            className={cn(
+              "relative flex items-start justify-between px-6 py-5",
+              tones[headerTone],
+              pattern && headerTone !== "plain" && "topo-header",
+            )}
           >
-            <X className="w-5 h-5" />
-          </button>
-        </header>
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          {children}
-        </div>
+            <div className="min-w-0">{header}</div>
+            <button
+              onClick={onClose}
+              className={cn(
+                "ml-4 shrink-0 rounded-md p-1 transition-colors",
+                headerTone === "plain"
+                  ? "text-neutral-400 hover:bg-neutral-100"
+                  : "text-white/90 hover:bg-white/15",
+              )}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+
+        <div className="max-h-[70vh] overflow-y-auto px-6 py-6">{children}</div>
+
+        {footer && (
+          <div className="flex items-center justify-end gap-3 border-t border-neutral-100 bg-neutral-25 px-6 py-4">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

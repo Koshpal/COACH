@@ -75,4 +75,14 @@ export const coachService = {
     const response = await api.get('/coach/slots/weekly', { params: { weeks } });
     return response.data;
   },
+
+  getSlots: async (date?: string): Promise<any[]> => {
+    const response = await api.get('/coach/slots', { params: date ? { date } : {} });
+    return response.data;
+  },
+
+  deleteSlot: async (slotId: string) => {
+    const response = await api.delete(`/coach/slots/${slotId}`);
+    return response.data;
+  },
 };

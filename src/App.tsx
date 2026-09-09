@@ -9,6 +9,7 @@ import { ResetPassword } from './pages/ResetPassword/ResetPassword';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Sessions } from './pages/Sessions/Sessions';
 import { Availability } from './pages/Availability/Availability';
+import { AvailabilityEdit } from './pages/Availability/AvailabilityEdit';
 import { Clients } from './pages/Clients/Clients';
 import { ClientOverview } from './pages/Clients/ClientOverview';
 import { Settings } from './pages/Settings/Settings';
@@ -28,8 +29,10 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sessions" element={<Sessions />} />
               <Route path="/availability" element={<Availability />} />
+              <Route path="/availability/edit" element={<AvailabilityEdit />} />
               <Route path="/clients" element={<Clients />} />
-              <Route path="/client-overview" element={<ClientOverview />} />
+              <Route path="/clients/:id" element={<ClientOverview />} />
+              <Route path="/client-overview" element={<Navigate to="/clients/1" replace />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/settings" element={<Settings />} />
             </Route>

@@ -1,146 +1,239 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Clock, Mail, Star, Calendar, ChevronRight } from 'lucide-react';
-import { SessionCard } from '../../components/ui/SessionCard';
-import { coachService } from '../../services/coach.service';
-import { formatTime, formatDate } from '../../utils/date';
-import { SessionDetailsModal } from '../../components/ui/SessionDetailsModal';
-import { EndSessionModal } from '../../components/ui/EndSessionModal';
+import React, { useMemo, useState } from "react";
+import { Header } from "../../components/common/Header";
+import { Spinner, ErrorState } from "../../components/common/PageState";
+import { SegmentedControl } from "../../components/ui/SegmentedControl";
+import { Dropdown } from "../../components/ui/Dropdown";
+import { SessionCard } from "../../components/ui/SessionCard";
+import { SessionDetailsModal } from "../../components/ui/SessionDetailsModal";
+import { SessionEndFormModal } from "../../components/ui/SessionEndFormModal";
+import { SessionEndDetailsModal } from "../../components/ui/SessionEndDetailsModal";
+import { coachService } from "../../services/coach.service";
+import { useAsync } from "../../hooks/useAsync";
+import {
+  groupSessions,
+  toSessionDetail,
+  type ApiSession,
+  type SessionDetailData,
+} from "../../services/adapters";
+import { sessionDetail as fallbackDetail } from "../../mock/data";
 
-type TabType = 'Live' | 'Upcoming' | 'History';
+const TABS = ["Upcoming", "Past", "Cancelled"];
+const MONTHS = ["May 23", "Jun 23", "Jul 23", "Aug 23"];
+
+const GroupHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <h3 className="mb-4 mt-8 font-jakarta text-[20px] font-semibold text-neutral-900 first:mt-0">
+    {children}
+  </h3>
+);
+
+const dedupe = (rows: ApiSession[]) => {
+  const seen = new Set<string>();
+  return rows.filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
+};
 
 export const Sessions: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('Upcoming');
-  const [sessions, setSessions] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState("Upcoming");
+  const [month, setMonth] = useState(MONTHS[0]);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [endFormOpen, setEndFormOpen] = useState(false);
+  const [endDetailsOpen, setEndDetailsOpen] = useState(false);
+  const [activeDetail, setActiveDetail] = useState<SessionDetailData>(fallbackDetail);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Modal states
-  const [selectedSession, setSelectedSession] = useState<any>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEndOpen, setIsEndOpen] = useState(false);
-
-  const loadSessions = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await coachService.getSessions();
-      setSessions(data);
-    } catch (err) {
-      console.error('Error fetching sessions:', err);
-      setError('Failed to load sessions. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const { data, loading, error, reload } = useAsync(async () => {
+    const s = await coachService.getSessions();
+    return dedupe([
+      ...(s.bookedToday ?? []),
+      ...(s.upcoming ?? []),
+      ...(s.history ?? []),
+    ] as unknown as ApiSession[]);
   }, []);
 
-  useEffect(() => { loadSessions(); }, [loadSessions]);
+  const grouped = useMemo(() => (data ? groupSessions(data) : null), [data]);
+  const pastYears = useMemo(
+    () =>
+      grouped
+        ? Object.keys(grouped.pastByYear).sort((a, b) => Number(b) - Number(a))
+        : [],
+    [grouped],
+  );
 
-  const handleOpenDetails = (session: any) => {
-    setSelectedSession(session);
-    setIsDetailsOpen(true);
-  };
-
-  const handleOpenEndSession = (session: any) => {
-    setSelectedSession(session);
-    setIsEndOpen(true);
-  };
-
-  const filteredSessions = useMemo(() => {
-    if (!sessions) return [];
-    switch (activeTab) {
-      case 'Live': return sessions.bookedToday || [];
-      case 'Upcoming': return sessions.upcoming || [];
-      case 'History': return [...(sessions.history || [])].sort((a, b) => 
-        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-      );
-      default: return [];
+  const openDetail = async (
+    id: string,
+    kind: "session" | "end-details" | "end-form",
+  ) => {
+    setActiveId(id);
+    const raw = (data ?? []).find((s) => s.id === id);
+    let note = null;
+    let feedback = null;
+    try {
+      note = await coachService.getCoachNote(id);
+    } catch {
+      /* none yet */
     }
-  }, [activeTab, sessions]);
+    try {
+      feedback = await coachService.getSessionFeedback(id);
+    } catch {
+      /* none yet */
+    }
+    if (raw) setActiveDetail(toSessionDetail(raw, { note, feedback }));
+    if (kind === "session") setDetailsOpen(true);
+    else if (kind === "end-details") setEndDetailsOpen(true);
+    else setEndFormOpen(true);
+  };
+
+  const submitEnd = async ({
+    topics,
+    summary,
+    privateNotes,
+  }: {
+    topics: string[];
+    summary: string;
+    privateNotes: string;
+  }) => {
+    if (!activeId) return;
+    const body = [
+      topics.length ? `Topics: ${topics.join(", ")}` : "",
+      summary && `Summary: ${summary}`,
+      privateNotes && `Private: ${privateNotes}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    // The API only accepts coach notes on a COMPLETED session, and only lets a
+    // session be completed once it has ended — so complete first, then note.
+    try {
+      await coachService.updateSessionStatus(activeId, "COMPLETED");
+    } catch {
+      /* already completed, or the session hasn't ended yet */
+    }
+    try {
+      await coachService.updateSessionNotes(activeId, body || "Session completed.", "SHARED");
+    } catch {
+      /* notes rejected (session not yet completed) — status change still applied */
+    }
+    reload();
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)] font-heading">My Sessions</h1>
-          <p className="text-[var(--color-text-secondary)] mt-1">Manage and track all your coaching consultations.</p>
-        </div>
-        <div className="flex bg-[var(--color-bg-card)] p-1 rounded-xl border border-[var(--color-border-primary)] shadow-sm">
-          {(['Live', 'Upcoming', 'History'] as TabType[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] shadow-md' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'}`}
-            >
-              {tab === 'Live' ? 'Today' : tab}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {loading ? (
-        <div className="py-20 flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : error ? (
-        <div className="py-20 text-center bg-[var(--color-bg-card)] rounded-2xl border border-dashed border-[var(--color-border-primary)]">
-          <p className="text-[var(--color-error)] font-medium mb-4">{error}</p>
-          <button
-            onClick={loadSessions}
-            className="px-6 py-2 bg-[var(--color-primary)] text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all"
-          >
-            Retry
-          </button>
-        </div>
-      ) : filteredSessions.length === 0 ? (
-        <div className="py-20 text-center bg-[var(--color-bg-card)] rounded-2xl border border-dashed border-[var(--color-border-primary)]">
-          <p className="text-[var(--color-text-secondary)] italic">No {activeTab.toLowerCase()} sessions found.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredSessions.map((session: any) => (
-            <SessionCard
-              key={session.id}
-              id={session.id}
-              startTime={
-                activeTab === 'Upcoming' || activeTab === 'History'
-                  ? formatDate(session.startTime)
-                  : formatTime(session.startTime)
-              }
-              endTime={
-                activeTab === 'Upcoming' || activeTab === 'History'
-                  ? formatDate(session.endTime)
-                  : formatTime(session.endTime)
-              }
-              clientName={session.clientName || session.employee?.fullName || session.client?.name || 'Unassigned Client'}
-              sessionType={session.type || 'Individual Coaching'}
-              badge={session.status === 'CONFIRMED' ? 'Confirmed' : session.status}
-              status={session.status}
-              isVirtual={true}
-              duration="45m"
-              onJoinSession={() => window.open(session.meetingLink, '_blank')}
-              onEndSession={() => handleOpenEndSession(session)}
-              onViewDetails={() => handleOpenDetails(session)}
+    <div className="flex flex-col gap-6">
+      <Header
+        title="Sessions"
+        below={
+          <div className="flex items-center justify-between">
+            <SegmentedControl
+              variant="pill"
+              options={TABS}
+              value={tab}
+              onChange={setTab}
             />
+            <Dropdown value={month} options={MONTHS} onChange={setMonth} />
+          </div>
+        }
+      />
+
+      {loading && <Spinner label="Loading sessions…" />}
+      {error && <ErrorState message={error} onRetry={reload} />}
+
+      {grouped && tab === "Upcoming" && (
+        <div>
+          {grouped.today.length > 0 && (
+            <div>
+              <GroupHeading>Today</GroupHeading>
+              <div className="space-y-4">
+                {grouped.today.map((s, i) => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    live={i === 0}
+                    onViewDetails={() => openDetail(s.id, "session")}
+                    onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank")}
+                    onEnd={() => openDetail(s.id, "end-form")}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {grouped.nextWeek.length > 0 && (
+            <div>
+              <GroupHeading>Next Week</GroupHeading>
+              <div className="space-y-4">
+                {grouped.nextWeek.map((s) => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    onViewDetails={() => openDetail(s.id, "session")}
+                    onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank")}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {grouped.today.length === 0 && grouped.nextWeek.length === 0 && (
+            <p className="mt-8 font-outfit text-[14px] text-neutral-400">
+              No upcoming sessions.
+            </p>
+          )}
+        </div>
+      )}
+
+      {grouped && tab === "Past" && (
+        <div>
+          <p className="font-outfit text-[15px] text-neutral-600">
+            {pastYears.reduce((n, y) => n + grouped.pastByYear[y].length, 0)} Results found
+          </p>
+          {pastYears.map((year) => (
+            <div key={year}>
+              <GroupHeading>{year}</GroupHeading>
+              <div className="space-y-4">
+                {grouped.pastByYear[year].map((s) => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    onViewDetails={() => openDetail(s.id, "end-details")}
+                    onRate={() => openDetail(s.id, "end-details")}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
 
-      {/* Modals */}
-      {selectedSession && (
-        <>
-          <SessionDetailsModal
-            isOpen={isDetailsOpen}
-            onClose={() => setIsDetailsOpen(false)}
-            session={selectedSession}
-          />
-          <EndSessionModal
-            isOpen={isEndOpen}
-            onClose={() => setIsEndOpen(false)}
-            session={selectedSession}
-            onSuccess={() => { setIsEndOpen(false); loadSessions(); }}
-          />
-        </>
+      {grouped && tab === "Cancelled" && (
+        <div className="space-y-4 pt-2">
+          {grouped.cancelled.length ? (
+            grouped.cancelled.map((s) => (
+              <SessionCard
+                key={s.id}
+                session={s}
+                onViewDetails={() => openDetail(s.id, "session")}
+              />
+            ))
+          ) : (
+            <p className="mt-4 font-outfit text-[14px] text-neutral-400">
+              No cancelled sessions.
+            </p>
+          )}
+        </div>
       )}
+
+      <SessionDetailsModal
+        isOpen={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        detail={activeDetail}
+      />
+      <SessionEndFormModal
+        isOpen={endFormOpen}
+        onClose={() => setEndFormOpen(false)}
+        detail={activeDetail}
+        clientName={activeDetail.clientName}
+        onSubmit={submitEnd}
+      />
+      <SessionEndDetailsModal
+        isOpen={endDetailsOpen}
+        onClose={() => setEndDetailsOpen(false)}
+        detail={activeDetail}
+      />
     </div>
   );
 };
