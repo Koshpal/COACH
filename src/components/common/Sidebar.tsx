@@ -16,7 +16,6 @@ import {
   IconCheckCircle,
   IconTrendUpCircle,
 } from "../icons/figma";
-import { coach } from "../../mock/data";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -82,9 +81,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const userName = (() => {
     try {
       const u = JSON.parse(localStorage.getItem("user") || "null");
-      return u?.name || u?.email?.split("@")[0] || coach.name;
+      return u?.name || u?.email?.split("@")[0] || "Coach";
     } catch {
-      return coach.name;
+      return "Coach";
     }
   })();
   const initials = (() => {

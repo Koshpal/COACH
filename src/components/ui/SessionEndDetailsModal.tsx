@@ -3,14 +3,13 @@ import { Modal } from "../common/Modal";
 import { Button } from "./Button";
 import { Avatar } from "./Avatar";
 import { StarRating } from "./RatingPill";
-import { sessionDetail } from "../../mock/data";
 import type { SessionDetailData } from "../../services/adapters";
 import { coachService } from "../../services/coach.service";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  detail?: SessionDetailData;
+  detail: SessionDetailData;
   /** session id — enables the "Edit" flow on the session note */
   sessionId?: string | null;
   onSaved?: () => void;
@@ -19,7 +18,7 @@ interface Props {
 export const SessionEndDetailsModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  detail = sessionDetail,
+  detail,
   sessionId,
   onSaved,
 }) => {

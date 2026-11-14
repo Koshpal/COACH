@@ -1,3 +1,4 @@
+import { usePolling } from '../../hooks/usePolling';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/ui/Button';
@@ -35,7 +36,7 @@ export const Tools: React.FC = () => {
   const results = useAsync(() => (empId ? opsService.results(empId) : Promise.resolve([] as ToolResult[])), [empId]);
 
   // The employee confirms in their own portal: poll so the coach sees "Confirmed" without refreshing.
-  useEffect(() => { if (!empId) return; const t = setInterval(() => results.reload(), 10_000); return () => clearInterval(t); }, [empId]); // eslint-disable-line react-hooks/exhaustive-deps
+  usePolling(results.refresh, 10_000, !!empId);
 
   useEffect(() => {
     setVals(Object.fromEntries(form.fields.map((f) => [f.key, f.def ?? ''])));

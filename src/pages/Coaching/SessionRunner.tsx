@@ -103,7 +103,26 @@ const Runner: React.FC<{ initial: RunnerState; reload: () => Promise<void> }> = 
     } catch (e) { showToast(parseApiError(e).message, 'error'); }
   };
 
-  const consentLost = live && !initial.consent.active;
+  // Consent can be withdrawn while the runner is open. Re-check it periodically and whenever the tab regains
+  // focus, and lock editing straight away. Only the consent flag is taken from the refresh, never the notes,
+  // so a poll cannot overwrite what the coach is typing. The server still rejects writes either way.
+  const [consentActive, setConsentActive] = useState(initial.consent.active);
+  useEffect(() => { setConsentActive(initial.consent.active); }, [initial.consent.active]);
+  useEffect(() => {
+    if (!live) return;
+    let stopped = false;
+    const check = async () => {
+      try {
+        const fresh = await coachingService.state(s.id);
+        if (!stopped) setConsentActive(fresh.consent.active);
+      } catch { /* offline or transient: keep the last known state; the server enforces on every write */ }
+    };
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void check(); }, 20_000);
+    const onVisible = () => { if (document.visibilityState === 'visible') void check(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { stopped = true; clearInterval(timer); document.removeEventListener('visibilitychange', onVisible); };
+  }, [live, s.id]);
+  const consentLost = live && !consentActive;
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (

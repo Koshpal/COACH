@@ -9,7 +9,9 @@ interface Draft { baseVersion: number; changes: Partial<NoteFields>; ts: number 
 const DEBOUNCE_MS = 1200;
 const MAX_BACKOFF_MS = 30_000;
 
-// Coaching notes can contain sensitive financial information. Keep recovery drafts tab-scoped\n// rather than persisting them across browser restarts in localStorage.\nconst draftKey = (sessionId: string) => `koshpal.coach.notes.${sessionId}`;
+// Coaching notes can contain sensitive financial information. Keep recovery drafts tab-scoped
+// rather than persisting them across browser restarts in localStorage.
+const draftKey = (sessionId: string) => `koshpal.coach.notes.${sessionId}`;
 const readDraft = (sessionId: string): Draft | null => {
   try { const raw = sessionStorage.getItem(draftKey(sessionId)); return raw ? (JSON.parse(raw) as Draft) : null; } catch { return null; }
 };

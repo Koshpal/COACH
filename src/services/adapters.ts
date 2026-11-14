@@ -12,6 +12,8 @@ import type {
   CalDay,
 } from "../mock/data";
 import { sessionDetail } from "../mock/data";
+import { utcToIST as toIst } from "../utils/timezone";
+const istNow = () => toIst(new Date());
 
 export type SessionDetailData = typeof sessionDetail;
 
@@ -101,8 +103,8 @@ const DEFAULT_ROLE = "Employee";
 /* session card                                                        */
 /* ------------------------------------------------------------------ */
 export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
-  const start = new Date(s.startTime);
-  const end = new Date(s.endTime);
+  const start = toIst(s.startTime);
+  const end = toIst(s.endTime);
   const c = clientOf(s);
 
   let status: MockSession["status"] = "upcoming";
@@ -110,7 +112,7 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
   else if (s.status === "CANCELLED") status = "cancelled";
   else if (s.isLive) status = "ready";
 
-  const today = new Date();
+  const today = istNow();
   let group: string;
   if (status === "past" || status === "cancelled") group = String(start.getFullYear());
   else if (isSameDay(start, today)) group = "today";
@@ -142,8 +144,8 @@ export function toSessionDetail(
     credential?: string;
   } = {},
 ): SessionDetailData {
-  const start = new Date(s.startTime);
-  const end = new Date(s.endTime);
+  const start = toIst(s.startTime);
+  const end = toIst(s.endTime);
   const c = clientOf(s);
   const topics = s.coachNotes
     ? []
@@ -152,7 +154,7 @@ export function toSessionDetail(
           .split(/[·,]/)
           .map((t: string) => t.trim())
           .filter(Boolean)
-      : ["Retirement planning", "Finance management"];
+      : [];
 
   const credential =
     opts.credential ?? [c.department, c.company].filter(Boolean).join(" | ");
@@ -167,7 +169,7 @@ export function toSessionDetail(
     weekday: format(start, "EEEE"),
     timeRange: `${format(start, "hh:mm a")}-${format(end, "hh:mm a")}`,
     longDate: format(start, "MMMM d"),
-    topics: topics.length ? topics : ["Retirement planning", "Finance management"],
+    topics,
     // The backend stores ONE note per session — surface it once as the summary.
     summary: opts.note?.notes ?? "",
     privateNotes: "",
@@ -260,7 +262,7 @@ export function toClients(list: ApiSession[], topics: string[]): MockClient[] {
       .map((s) => s.rating)
       .filter((r): r is number => typeof r === "number");
     const last = sessions
-      .map((s) => new Date(s.startTime))
+      .map((s) => toIst(s.startTime))
       .sort((a, b) => b.getTime() - a.getTime())[0];
     return {
       id: c.id,
@@ -288,9 +290,9 @@ export function toClientProfile(
   const completed = mine.filter((s) => s.status === "COMPLETED");
   const upcoming = mine
     .filter((s) => s.status === "CONFIRMED")
-    .sort((a, b) => +new Date(a.startTime) - +new Date(b.startTime));
+    .sort((a, b) => +toIst(a.startTime) - +toIst(b.startTime));
   const past = [...completed].sort(
-    (a, b) => +new Date(b.startTime) - +new Date(a.startTime),
+    (a, b) => +toIst(b.startTime) - +toIst(a.startTime),
   );
   const ratings = completed
     .map((s) => s.rating)
@@ -307,7 +309,7 @@ export function toClientProfile(
       : completed.length,
     topics: topics.length ? topics : ["Investment Planning", "Retirement", "Investments"],
     sessionsAttended: completed.length,
-    lastSession: past[0] ? format(new Date(past[0].startTime), "d MMM yy") : "—",
+    lastSession: past[0] ? format(toIst(past[0].startTime), "d MMM yy") : "—",
     stats: [
       {
         key: "total",
@@ -321,15 +323,15 @@ export function toClientProfile(
         label: "ENGAGEMENT",
         value: upcoming.length ? "Active" : "Idle",
         sub: past[0]
-          ? `Last session: ${format(new Date(past[0].startTime), "MMM d")}`
+          ? `Last session: ${format(toIst(past[0].startTime), "MMM d")}`
           : "No sessions yet",
         tone: "indigo" as const,
       },
       {
         key: "upcoming",
         label: "UPCOMING SESSIONS",
-        value: upcoming[0] ? format(new Date(upcoming[0].startTime), "d MMM") : "—",
-        sub: upcoming[0] ? format(new Date(upcoming[0].startTime), "hh:mm a") : "",
+        value: upcoming[0] ? format(toIst(upcoming[0].startTime), "d MMM") : "—",
+        sub: upcoming[0] ? format(toIst(upcoming[0].startTime), "hh:mm a") : "",
         tone: "teal" as const,
       },
     ],
@@ -409,7 +411,7 @@ const to12h = (hhmm: string) => {
   return `${hh}:${String(m).padStart(2, "0")} ${ap}`;
 };
 
-export function toCalendarMonth(slots: ApiSlot[], monthAnchor = new Date()) {
+export function toCalendarMonth(slots: ApiSlot[], monthAnchor = istNow()) {
   const year = monthAnchor.getFullYear();
   const month = monthAnchor.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -418,12 +420,12 @@ export function toCalendarMonth(slots: ApiSlot[], monthAnchor = new Date()) {
   // group slots by calendar day
   const byDay = new Map<number, { start: string; end: string; blocked: boolean }[]>();
   for (const s of slots) {
-    const d = new Date(s.startTime);
+    const d = toIst(s.startTime);
     if (d.getFullYear() !== year || d.getMonth() !== month) continue;
     const arr = byDay.get(d.getDate()) ?? [];
     arr.push({
       start: format(d, "HH:mm"),
-      end: format(new Date(s.endTime), "HH:mm"),
+      end: format(toIst(s.endTime), "HH:mm"),
       blocked: s.status === "BLOCKED",
     });
     byDay.set(d.getDate(), arr);
@@ -432,8 +434,8 @@ export function toCalendarMonth(slots: ApiSlot[], monthAnchor = new Date()) {
   const days: CalDay[] = [];
   for (let i = 0; i < firstWeekday; i++) days.push({ day: null });
   const todayNum =
-    new Date().getFullYear() === year && new Date().getMonth() === month
-      ? new Date().getDate()
+    istNow().getFullYear() === year && istNow().getMonth() === month
+      ? istNow().getDate()
       : -1;
   for (let d = 1; d <= daysInMonth; d++) {
     const raw = byDay.get(d) ?? [];

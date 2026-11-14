@@ -4,7 +4,9 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 const MAX_RETRY_AFTER_MS = 30_000;
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+// Only the dev server may fall back to a local API; a production build is checked in vite.config.ts.
+const BASE_URL: string = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000/api/v1' : '');
+if (!BASE_URL) throw new Error('VITE_API_URL is not configured');
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _authRetry?: boolean;
@@ -17,6 +19,17 @@ const api: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
+
+// One refresh at a time. A page load fires several requests at once; if they all hit 401 and each rotated
+// the refresh token on its own, all but the first would fail and the coach would be sent to the login page.
+let refreshInFlight: Promise<void> | null = null;
+const refreshSession = (): Promise<void> => {
+  refreshInFlight ??= axios
+    .post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true, timeout: 15000 })
+    .then(() => undefined)
+    .finally(() => { refreshInFlight = null; });
+  return refreshInFlight;
+};
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => config,
@@ -37,18 +50,24 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._authRetry && !isAuthEndpoint) {
       originalRequest._authRetry = true;
       try {
-        await axios.post(`${BASE_URL}/auth/refresh`, {}, {
-          withCredentials: true,
-          timeout: 15000,
-        });
-        return api(originalRequest);
+        await refreshSession();
       } catch {
-        localStorage.removeItem('user');
-        if (window.location.pathname !== '/login') {
-          window.location.assign('/login');
+        // Another tab may have refreshed at the same moment (the cookies are shared between tabs, and the
+        // server accepts only one refresh per token). If the session is valid now, carry on.
+        const stillSignedIn = await axios
+          .get(`${BASE_URL}/auth/me`, { withCredentials: true, timeout: 15000 })
+          .then(() => true, () => false);
+        if (!stillSignedIn) {
+          localStorage.removeItem('user');
+          if (window.location.pathname !== '/login') {
+            window.location.assign('/login');
+          }
+          return Promise.reject(error);
         }
-        return Promise.reject(error);
       }
+      // Only a failed REFRESH means the session is gone. If the replayed request itself fails (403, 500...),
+      // that error belongs to the caller.
+      return api(originalRequest);
     }
 
     // Retrying a mutation after a 429 can create duplicate sessions, notes, or action items.

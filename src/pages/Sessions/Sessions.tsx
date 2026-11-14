@@ -17,11 +17,13 @@ import {
   type ApiSession,
   type SessionDetailData,
 } from "../../services/adapters";
-import { sessionDetail as fallbackDetail } from "../../mock/data";
+import { IST_TIMEZONE as IST, utcToIST as toIst } from "../../utils/timezone";
+import { useToast } from "../../context/ToastContext";
+import { coachingService, parseApiError } from "../../services/coaching.service";
 
 const TABS = ["Upcoming", "Past", "Cancelled"];
 const ALL_MONTHS = "All months";
-const monthLabel = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit" }).format(new Date(value));
+const monthLabel = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: IST }).format(new Date(value));
 
 const GroupHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h3 className="mb-4 mt-8 font-jakarta text-[20px] font-semibold text-neutral-900 first:mt-0">
@@ -36,12 +38,13 @@ const dedupe = (rows: ApiSession[]) => {
 
 export const Sessions: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [tab, setTab] = useState("Upcoming");
   const [month, setMonth] = useState(ALL_MONTHS);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [endFormOpen, setEndFormOpen] = useState(false);
   const [endDetailsOpen, setEndDetailsOpen] = useState(false);
-  const [activeDetail, setActiveDetail] = useState<SessionDetailData>(fallbackDetail);
+  const [activeDetail, setActiveDetail] = useState<SessionDetailData | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsync(async () => {
@@ -56,7 +59,7 @@ export const Sessions: React.FC = () => {
   const monthOptions = useMemo(() => {
     const months = new Map<string, number>();
     (data ?? []).forEach((session) => {
-      const date = new Date(session.startTime);
+      const date = toIst(session.startTime);
       if (!Number.isNaN(date.getTime())) {
         months.set(monthLabel(session.startTime), new Date(date.getFullYear(), date.getMonth(), 1).getTime());
       }
@@ -95,7 +98,12 @@ export const Sessions: React.FC = () => {
     } catch {
       /* none yet */
     }
-    if (raw) setActiveDetail(toSessionDetail(raw, { note, feedback }));
+    if (!raw) {
+      // Never open a detail view on placeholder content.
+      showToast("That session is no longer in the list. Refresh and try again.", "error");
+      return;
+    }
+    setActiveDetail(toSessionDetail(raw, { note, feedback }));
     if (kind === "session") setDetailsOpen(true);
     else if (kind === "end-details") setEndDetailsOpen(true);
     else setEndFormOpen(true);
@@ -111,25 +119,44 @@ export const Sessions: React.FC = () => {
     privateNotes: string;
   }) => {
     if (!activeId) return;
+    // Coach notes are one record with one visibility. If the coach wrote private notes, the whole
+    // note stays PRIVATE so they are never shown to the employee; otherwise it is shared.
+    const hasPrivate = privateNotes.trim().length > 0;
     const body = [
       topics.length ? `Topics: ${topics.join(", ")}` : "",
       summary && `Summary: ${summary}`,
-      privateNotes && `Private: ${privateNotes}`,
+      hasPrivate && `Private: ${privateNotes}`,
     ]
       .filter(Boolean)
       .join("\n");
     // The API only accepts coach notes on a COMPLETED session, and only lets a
     // session be completed once it has ended — so complete first, then note.
+    // Any failure is shown and rethrown so the form stays open with what the coach typed.
     try {
       await coachService.updateSessionStatus(activeId, "COMPLETED");
-    } catch {
-      /* already completed, or the session hasn't ended yet */
+    } catch (e) {
+      const err = parseApiError(e);
+      if (err.code === "USE_SESSION_RUNNER") {
+        showToast(err.message, "info");
+        try {
+          const session = await coachingService.createSession(activeId); // returns the existing one if there is one
+          navigate(`/sessions/${session.id}/prepare`);
+        } catch (e2) {
+          showToast(parseApiError(e2).message, "error");
+        }
+        return;
+      }
+      showToast(`Could not complete the session: ${err.message}`, "error");
+      throw e;
     }
     try {
-      await coachService.updateSessionNotes(activeId, body || "Session completed.", "SHARED");
-    } catch {
-      /* notes rejected (session not yet completed) — status change still applied */
+      await coachService.updateSessionNotes(activeId, body || "Session completed.", hasPrivate ? "PRIVATE" : "SHARED");
+    } catch (e) {
+      showToast(`The session was completed, but the notes were not saved: ${parseApiError(e).message}`, "error");
+      reload();
+      throw e;
     }
+    showToast(hasPrivate ? "Session completed. Your notes are private and were not shared." : "Session completed.", "success");
     reload();
   };
 
@@ -236,42 +263,46 @@ export const Sessions: React.FC = () => {
         </div>
       )}
 
-      <SessionDetailsModal
-        isOpen={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        detail={activeDetail}
-        onViewProfile={
-          activeDetail.clientId
-            ? () => {
-                setDetailsOpen(false);
-                navigate(`/clients/${activeDetail.clientId}`);
-              }
-            : undefined
-        }
-        onJoin={
-          activeDetail.meetingLink
-            ? () => window.open(activeDetail.meetingLink, "_blank", "noopener,noreferrer")
-            : undefined
-        }
-        onReschedule={() => {
-          setDetailsOpen(false);
-          navigate("/availability");
-        }}
-      />
-      <SessionEndFormModal
-        isOpen={endFormOpen}
-        onClose={() => setEndFormOpen(false)}
-        detail={activeDetail}
-        clientName={activeDetail.clientName}
-        onSubmit={submitEnd}
-      />
-      <SessionEndDetailsModal
-        isOpen={endDetailsOpen}
-        onClose={() => setEndDetailsOpen(false)}
-        detail={activeDetail}
-        sessionId={activeId}
-        onSaved={reload}
-      />
+      {activeDetail && (
+        <>
+          <SessionDetailsModal
+          isOpen={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
+          detail={activeDetail}
+          onViewProfile={
+            activeDetail.clientId
+              ? () => {
+                  setDetailsOpen(false);
+                  navigate(`/clients/${activeDetail.clientId}`);
+                }
+              : undefined
+          }
+          onJoin={
+            activeDetail.meetingLink
+              ? () => window.open(activeDetail.meetingLink, "_blank", "noopener,noreferrer")
+              : undefined
+          }
+          onReschedule={() => {
+            setDetailsOpen(false);
+            navigate("/availability");
+          }}
+        />
+          <SessionEndFormModal
+          isOpen={endFormOpen}
+          onClose={() => setEndFormOpen(false)}
+          detail={activeDetail}
+          clientName={activeDetail.clientName}
+          onSubmit={submitEnd}
+        />
+          <SessionEndDetailsModal
+          isOpen={endDetailsOpen}
+          onClose={() => setEndDetailsOpen(false)}
+          detail={activeDetail}
+          sessionId={activeId}
+          onSaved={reload}
+        />
+        </>
+      )}
     </div>
   );
 };

@@ -1,4 +1,24 @@
+import { format } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { CalendarEvent, Session } from '../../types/coach.types';
+import { IST_TIMEZONE, utcToIST } from '../../utils/timezone';
+
+/**
+ * Calendar model: every Date that represents a CALENDAR DAY ("today", the week being shown, a grid cell) is an
+ * Asia/Kolkata wall-clock date: its local fields (getDate, getHours...) read as IST, whatever timezone the
+ * browser is in. Real instants (what the API stores and returns) are converted with `toIst` before they are
+ * grouped by day or positioned, and boundaries are converted back with `rangeToInstants` before querying.
+ */
+export const toIst = (value: string | Date) => utcToIST(value);
+export const istToday = () => toIst(new Date());
+export const dayKey = (d: Date) => format(d, 'yyyy-MM-dd');
+const isSameIstDay = (a: Date, b: Date) => dayKey(a) === dayKey(b);
+/** IST wall-clock boundaries -> the real instants to send to the API. */
+export const rangeToInstants = (range: { startDate: Date; endDate: Date }) => ({
+  startDate: fromZonedTime(range.startDate, IST_TIMEZONE),
+  endDate: fromZonedTime(range.endDate, IST_TIMEZONE),
+});
+
 
 export type CalendarView = 'week' | 'month';
 
@@ -70,8 +90,8 @@ export const getCalendarDays = (date: Date, view: CalendarView): CalendarDay[] =
     while (cursor <= range.endDate) {
       days.push({
         date: new Date(cursor),
-        key: cursor.toISOString().slice(0, 10),
-        isToday: cursor.toDateString() === new Date().toDateString(),
+        key: dayKey(cursor),
+        isToday: isSameIstDay(cursor, istToday()),
         isCurrentMonth: cursor.getMonth() === date.getMonth(),
       });
       cursor.setDate(cursor.getDate() + 1);
@@ -86,8 +106,8 @@ export const getCalendarDays = (date: Date, view: CalendarView): CalendarDay[] =
     day.setDate(start.getDate() + index);
     return {
       date: day,
-      key: day.toISOString().slice(0, 10),
-      isToday: day.toDateString() === new Date().toDateString(),
+      key: dayKey(day),
+      isToday: isSameIstDay(day, istToday()),
     };
   });
 };
@@ -133,22 +153,22 @@ export const normalizeSessionsToEvents = (response: any): CalendarEvent[] => {
 
 export const filterEventsByRange = (events: CalendarEvent[], range: CalendarRange) => {
   return events.filter((event) => {
-    const start = new Date(event.startTime);
+    const start = toIst(event.startTime);
     return start >= range.startDate && start <= range.endDate;
   });
 };
 
 export const buildDayLaneEvents = (events: CalendarEvent[], day: Date) => {
   const sameDay = events
-    .filter((event) => new Date(event.startTime).toDateString() === day.toDateString())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    .filter((event) => isSameIstDay(toIst(event.startTime), day))
+    .sort((a, b) => toIst(a.startTime).getTime() - toIst(b.startTime).getTime());
 
   const assigned: DayLaneEvent[] = [];
   const laneEnds: Date[] = [];
 
   sameDay.forEach((event) => {
-    const eventStart = new Date(event.startTime);
-    const eventEnd = new Date(event.endTime);
+    const eventStart = toIst(event.startTime);
+    const eventEnd = toIst(event.endTime);
     let laneIndex = laneEnds.findIndex((laneEnd) => laneEnd <= eventStart);
 
     if (laneIndex === -1) {
@@ -174,7 +194,7 @@ export const buildDayLaneEvents = (events: CalendarEvent[], day: Date) => {
 
 export const formatCalendarTime = (value: string) => {
   const parsed = new Date(value);
-  return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return parsed.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: IST_TIMEZONE });
 };
 
 export const getMonthGridDays = (date: Date) => {
@@ -188,8 +208,8 @@ export const getMonthGridDays = (date: Date) => {
     day.setDate(startDate.getDate() + index);
     return {
       date: day,
-      key: day.toISOString().slice(0, 10),
-      isToday: day.toDateString() === new Date().toDateString(),
+      key: dayKey(day),
+      isToday: isSameIstDay(day, istToday()),
       isCurrentMonth: day.getMonth() === date.getMonth(),
     };
   });

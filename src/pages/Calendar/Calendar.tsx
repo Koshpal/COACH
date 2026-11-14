@@ -9,6 +9,10 @@ import {
   formatCalendarTime,
   getCalendarDays,
   getCalendarRange,
+  rangeToInstants,
+  istToday,
+  toIst,
+  dayKey,
   getDayColumns,
   getEventStatusLabel,
   getMonthGridDays,
@@ -22,7 +26,7 @@ const VIEW_TITLES: Record<CalendarView, string> = {
 
 export const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(() => {
-    const today = new Date();
+    const today = istToday(); // IST "today", see calendar.utils
     today.setHours(0, 0, 0, 0);
     return today;
   });
@@ -30,6 +34,7 @@ export const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0); // bumped by "Try again"
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   const range = useMemo(() => getCalendarRange(currentDate, view), [currentDate, view]);
@@ -41,9 +46,10 @@ export const Calendar: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+        const instants = rangeToInstants(range);
         const response = await coachService.getSessions({
-          startDate: range.startDate.toISOString(),
-          endDate: range.endDate.toISOString(),
+          startDate: instants.startDate.toISOString(),
+          endDate: instants.endDate.toISOString(),
         });
 
         if (!isMounted) return;
@@ -65,7 +71,7 @@ export const Calendar: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [range.endDate, range.startDate, view]);
+  }, [range.endDate, range.startDate, view, attempt]);
 
   const calendarDays = useMemo(() => {
     return view === 'month' ? getMonthGridDays(currentDate) : getCalendarDays(currentDate, view);
@@ -79,7 +85,7 @@ export const Calendar: React.FC = () => {
   const monthEventsByDay = useMemo(() => {
     return calendarDays.reduce<Record<string, CalendarEvent[]>>((acc, day) => {
       const matches = visibleEvents.filter(
-        (event) => new Date(event.startTime).toDateString() === day.date.toDateString(),
+        (event) => dayKey(toIst(event.startTime)) === dayKey(day.date),
       );
       acc[day.key] = matches;
       return acc;
@@ -190,6 +196,12 @@ export const Calendar: React.FC = () => {
       ) : error ? (
         <div className="rounded-3xl border border-[var(--color-error)]/20 bg-[var(--color-error)]/10 px-6 py-10 text-center text-[var(--color-error)]">
           <p className="font-semibold">{error}</p>
+          <button
+            onClick={() => setAttempt((n) => n + 1)}
+            className="mt-4 rounded-full bg-[var(--color-primary)] px-5 py-2 font-outfit text-[14px] font-medium text-white"
+          >
+            Try again
+          </button>
         </div>
       ) : visibleEvents.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-[var(--color-border-primary)] bg-[var(--color-bg-card)] px-6 py-16 text-center shadow-sm">
@@ -237,8 +249,8 @@ export const Calendar: React.FC = () => {
                       ))}
 
                       {dayEvents.map((event) => {
-                        const start = new Date(event.startTime);
-                        const end = new Date(event.endTime);
+                        const start = toIst(event.startTime);
+                        const end = toIst(event.endTime);
                         const topPx = Math.max(((start.getHours() - 8) * 60 + start.getMinutes()) * (60 / 60), 0);
                         const heightPx = Math.max(((end.getTime() - start.getTime()) / 60000) * (60 / 60), 54);
                         const leftPct = ((event.lane ?? 0) / maxLane) * 100;

@@ -22,7 +22,6 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -66,14 +65,9 @@ export const Login: React.FC = () => {
         return;
       }
 
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-      
       showToast('Welcome back!', 'success');
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
@@ -149,19 +143,7 @@ export const Login: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2 mb-5 sm:mb-6">
-            <label className="flex items-center flex-shrink-0 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                disabled={loading}
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex-shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-[var(--color-primary)] border-[var(--color-input-border)]"
-              />
-              <span className="ml-1.5 sm:ml-2 text-xs sm:text-sm whitespace-nowrap text-[var(--color-text-secondary)]">
-                Remember me
-              </span>
-            </label>
+          <div className="flex items-center justify-end gap-2 mb-5 sm:mb-6">
             <Link to="/forgot-password" className="text-xs font-medium sm:text-sm whitespace-nowrap hover:opacity-80 text-[var(--color-secondary)]">
               Forgot password?
             </Link>

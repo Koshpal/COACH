@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Menu, LogOut, ChevronRight, Settings as SettingsIcon } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { useMobileMenu } from "./Layout";
-import { IconBell, IconSettings2 } from "../icons/figma";
-import { coach } from "../../mock/data";
+import { IconSettings2 } from "../icons/figma";
 
 interface HeaderProps {
   title: string;
@@ -33,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
       return {};
     }
   })();
-  const userName = user.name || user.email?.split("@")[0] || coach.name;
+  const userName = user.name || user.email?.split("@")[0] || "Coach";
   const userEmail = user.email || "";
   const initials = (() => {
     const parts = String(userName).trim().split(/\s+/);
@@ -76,9 +75,6 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
 
         <div className="flex items-center gap-2">
           {actions}
-          <button className={iconBtn} aria-label="Notifications">
-            <IconBell size={20} />
-          </button>
           <button
             onClick={() => navigate("/settings")}
             className={iconBtn}

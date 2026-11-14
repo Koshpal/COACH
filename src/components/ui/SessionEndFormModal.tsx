@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Plus, Info } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Button } from "./Button";
-import { sessionDetail } from "../../mock/data";
 import type { SessionDetailData } from "../../services/adapters";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  detail?: SessionDetailData;
+  detail: SessionDetailData;
   clientName?: string;
   /** persist the session as ended; receives the composed note text */
   onSubmit?: (payload: {
@@ -34,7 +33,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const SessionEndFormModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  detail = sessionDetail,
+  detail,
   clientName = "Pranav Wadhwa",
   onSubmit,
 }) => {
@@ -68,6 +67,8 @@ export const SessionEndFormModal: React.FC<Props> = ({
     try {
       await onSubmit({ topics, summary, privateNotes });
       onClose();
+    } catch {
+      /* the page has already shown the error; keep the form open so nothing the coach typed is lost */
     } finally {
       setSaving(false);
     }

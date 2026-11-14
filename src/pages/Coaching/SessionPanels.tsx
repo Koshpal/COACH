@@ -1,3 +1,4 @@
+import { usePolling } from '../../hooks/usePolling';
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Trash2, XCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -130,7 +131,7 @@ export const ClosePanel: React.FC<{
     try { setCheck(await coachingService.closureCheck(s.id)); } catch { /* keep the last result */ }
   }, [s.id]);
   useEffect(() => { void refresh(); }, [refresh, itemsVersion]);
-  useEffect(() => { const t = setInterval(refresh, 8000); return () => clearInterval(t); }, [refresh]);
+  usePolling(refresh, 8000);
 
   const patch = async (body: Record<string, unknown>) => {
     try { setCheck(await coachingService.updateClosure(s.id, body)); } catch (e) { showToast(parseApiError(e).message, 'error'); }

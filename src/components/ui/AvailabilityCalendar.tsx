@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { Button } from "./Button";
-import { availabilityMonth, type CalDay } from "../../mock/data";
+import type { CalDay } from "../../mock/data";
 
 interface CalendarMonth {
   label: string;
@@ -11,11 +11,11 @@ interface CalendarMonth {
 }
 
 export const AvailabilityCalendar: React.FC<{
-  month?: CalendarMonth;
+  month: CalendarMonth;
   onEdit?: () => void;
   onPrev?: () => void;
   onNext?: () => void;
-}> = ({ month = availabilityMonth, onEdit, onPrev, onNext }) => {
+}> = ({ month, onEdit, onPrev, onNext }) => {
   const { label, weekdays, days } = month;
 
   return (

@@ -3,13 +3,12 @@ import { Calendar, ArrowUpRight } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Button } from "./Button";
 import { Avatar } from "./Avatar";
-import { sessionDetail } from "../../mock/data";
 import type { SessionDetailData } from "../../services/adapters";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  detail?: SessionDetailData;
+  detail: SessionDetailData;
   onReschedule?: () => void;
   onJoin?: () => void;
   onViewProfile?: () => void;
@@ -18,7 +17,7 @@ interface Props {
 export const SessionDetailsModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  detail = sessionDetail,
+  detail,
   onReschedule,
   onJoin,
   onViewProfile,
