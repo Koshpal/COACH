@@ -21,7 +21,7 @@ const writeDraft = (sessionId: string, draft: Draft | null) => {
  * Live-notes autosave.
  *  - debounced PUT of ONLY the changed fields, with the server version they were based on;
  *  - one request in flight at a time; edits made meanwhile are sent right after;
- *  - every keystroke is mirrored to localStorage, so a refresh / crash / dropped connection loses nothing;
+ *  - every keystroke is mirrored to sessionStorage, so a refresh / crash / dropped connection loses nothing;
  *  - offline => retry with backoff (and immediately when the browser comes back online);
  *  - a 409 is surfaced as a conflict the coach resolves — never silently overwritten.
  */
