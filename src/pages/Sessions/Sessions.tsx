@@ -20,7 +20,8 @@ import {
 import { sessionDetail as fallbackDetail } from "../../mock/data";
 
 const TABS = ["Upcoming", "Past", "Cancelled"];
-const MONTHS = ["May 23", "Jun 23", "Jul 23", "Aug 23"];
+const ALL_MONTHS = "All months";
+const monthLabel = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit" }).format(new Date(value));
 
 const GroupHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h3 className="mb-4 mt-8 font-jakarta text-[20px] font-semibold text-neutral-900 first:mt-0">
@@ -36,7 +37,7 @@ const dedupe = (rows: ApiSession[]) => {
 export const Sessions: React.FC = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Upcoming");
-  const [month, setMonth] = useState(MONTHS[0]);
+  const [month, setMonth] = useState(ALL_MONTHS);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [endFormOpen, setEndFormOpen] = useState(false);
   const [endDetailsOpen, setEndDetailsOpen] = useState(false);
@@ -52,7 +53,22 @@ export const Sessions: React.FC = () => {
     ] as unknown as ApiSession[]);
   }, []);
 
-  const grouped = useMemo(() => (data ? groupSessions(data) : null), [data]);
+  const monthOptions = useMemo(() => {
+    const months = new Map<string, number>();
+    (data ?? []).forEach((session) => {
+      const date = new Date(session.startTime);
+      if (!Number.isNaN(date.getTime())) {
+        months.set(monthLabel(session.startTime), new Date(date.getFullYear(), date.getMonth(), 1).getTime());
+      }
+    });
+    return [ALL_MONTHS, ...Array.from(months.entries()).sort((a, b) => b[1] - a[1]).map(([label]) => label)];
+  }, [data]);
+
+  const filteredData = useMemo(
+    () => month === ALL_MONTHS ? (data ?? []) : (data ?? []).filter((session) => monthLabel(session.startTime) === month),
+    [data, month],
+  );
+  const grouped = useMemo(() => (data ? groupSessions(filteredData) : null), [data, filteredData]);
   const pastYears = useMemo(
     () =>
       grouped
@@ -129,7 +145,7 @@ export const Sessions: React.FC = () => {
               value={tab}
               onChange={setTab}
             />
-            <Dropdown value={month} options={MONTHS} onChange={setMonth} />
+            <Dropdown value={month} options={monthOptions} onChange={setMonth} />
           </div>
         }
       />
@@ -149,7 +165,7 @@ export const Sessions: React.FC = () => {
                     session={s}
                     live={i === 0}
                     onViewDetails={() => openDetail(s.id, "session")}
-                    onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank")}
+                    onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank", "noopener,noreferrer")}
                     onEnd={() => openDetail(s.id, "end-form")}
                   />
                 ))}
@@ -234,7 +250,7 @@ export const Sessions: React.FC = () => {
         }
         onJoin={
           activeDetail.meetingLink
-            ? () => window.open(activeDetail.meetingLink, "_blank")
+            ? () => window.open(activeDetail.meetingLink, "_blank", "noopener,noreferrer")
             : undefined
         }
         onReschedule={() => {
