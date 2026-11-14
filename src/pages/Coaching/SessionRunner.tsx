@@ -183,7 +183,7 @@ const Runner: React.FC<{ initial: RunnerState; reload: () => Promise<void> }> = 
           </section>
 
           <NotesPanel
-            fields={notes.fields} onChange={notes.setField} editable={live && notes.status !== 'locked'}
+            fields={notes.fields} onChange={notes.setField} editable={live && !consentLost && notes.status !== 'locked'}
             required={tpl.requiredNoteFields} conflict={notes.conflict} onKeepMine={notes.keepMine} onUseServer={notes.useServer}
           />
         </main>
@@ -196,11 +196,11 @@ const Runner: React.FC<{ initial: RunnerState; reload: () => Promise<void> }> = 
                 className={`flex-1 rounded-[8px] px-2 py-2 font-outfit text-[13px] font-medium ${rightTab === k ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-secondary)]'}`}>{t}</button>
             ))}
           </div>
-          {rightTab === 'plan' && <ActionPlanPanel sessionId={s.id} items={items} setItems={setItems} editable={live} />}
+          {rightTab === 'plan' && <ActionPlanPanel sessionId={s.id} items={items} setItems={setItems} editable={live && !consentLost} />}
           {rightTab === 'debts' && <DebtsPanel sessionId={s.id} editable={live && !consentLost} />}
           {rightTab === 'close' && (
             <ClosePanel
-              state={initial} itemsVersion={items.length} editable={live}
+              state={initial} itemsVersion={items.length} editable={live && !consentLost}
               flushNotes={notes.flush} hasUnsaved={notes.hasUnsaved}
               onCompleted={() => { showToast('Session completed.', 'success'); navigate('/dashboard'); }}
               onChanged={reload}
