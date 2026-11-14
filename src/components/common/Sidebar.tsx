@@ -10,6 +10,11 @@ import {
   IconAngleUpSmall,
   IconSettings2,
   IconChatInfo,
+  IconBrain,
+  IconComparison,
+  IconActivitySquare,
+  IconCheckCircle,
+  IconTrendUpCircle,
 } from "../icons/figma";
 import { coach } from "../../mock/data";
 
@@ -50,9 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const main: Item[] = [
     { icon: IconChartPie, label: "Overview", path: "/dashboard", match: (p) => p === "/dashboard" || p === "/" },
-    { icon: IconAddressBook, label: "Clients", path: "/clients", match: (p) => p.startsWith("/clients") },
+    { icon: IconAddressBook, label: "My Employees", path: "/clients", match: (p) => p.startsWith("/clients") },
     { icon: IconCalendarCheck, label: "Availability", path: "/availability", match: (p) => p.startsWith("/availability") },
     { icon: IconAlarmClock, label: "Schedule", path: "/sessions", match: (p) => p.startsWith("/sessions") },
+    { icon: IconBrain, label: "Playbook", path: "/playbook", match: (p) => p.startsWith("/playbook") },
+    { icon: IconComparison, label: "Financial tools", path: "/tools", match: (p) => p.startsWith("/tools") },
+    { icon: IconCheckCircle, label: "Homework", path: "/homework", match: (p) => p.startsWith("/homework") },
+    { icon: IconActivitySquare, label: "Escalations", path: "/escalations", match: (p) => p.startsWith("/escalations") },
+    { icon: IconTrendUpCircle, label: "Learning & quality", path: "/learning", match: (p) => p.startsWith("/learning") },
   ];
 
   const actions: Item[] = [
