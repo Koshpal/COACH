@@ -32,6 +32,8 @@ export const Tools: React.FC = () => {
   const [vals, setVals] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<Record<string, Record<string, string>[]>>({});
   const [busy, setBusy] = useState(false);
+  // Result of a calculation run without an employee: shown only here, never saved.
+  const [preview, setPreview] = useState<{ tool: string; outputs: any; configRef: string | null } | null>(null);
   const form = TOOL_FORMS[tool];
   const results = useAsync(() => (empId ? opsService.results(empId) : Promise.resolve([] as ToolResult[])), [empId]);
 
@@ -39,6 +41,7 @@ export const Tools: React.FC = () => {
   usePolling(results.refresh, 10_000, !!empId);
 
   useEffect(() => {
+    setPreview(null);
     setVals(Object.fromEntries(form.fields.map((f) => [f.key, f.def ?? ''])));
     setRows(Object.fromEntries((form.rows ?? []).map((r) => [r.key, Array.from({ length: Math.max(1, r.min ?? 0) }, () => ({}))])));
   }, [tool]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -52,7 +55,10 @@ export const Tools: React.FC = () => {
 
   const compute = async () => {
     setBusy(true);
-    try { await opsService.createResult({ employeeId: empId, tool, inputs }); showToast('Calculated. Review it, then share it with the employee.', 'success'); results.reload(); } catch (e) { showToast(opsError(e), 'error'); } finally { setBusy(false); }
+    try {
+      if (!empId) { setPreview(await opsService.calculate({ tool, inputs })); showToast('Calculated. Pick an employee if you want to save and share it.', 'success'); }
+      else { setPreview(null); await opsService.createResult({ employeeId: empId, tool, inputs }); showToast('Calculated. Review it, then share it with the employee.', 'success'); results.reload(); }
+    } catch (e) { showToast(opsError(e), 'error'); } finally { setBusy(false); }
   };
   const share = async (id: string) => { try { await opsService.shareResult(id); showToast('Shared. The employee can now see and confirm it.', 'success'); results.reload(); } catch (e) { showToast(opsError(e), 'error'); } };
 
@@ -62,7 +68,7 @@ export const Tools: React.FC = () => {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_1.2fr]">
         <Card title="Calculate">
           <div className="flex flex-col gap-4">
-            <Field label="Employee"><Select value={empId} onChange={(e) => setEmpId(e.target.value)}><option value="">Select an employee…</option>{employees.data?.items.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select></Field>
+            <Field label="Employee (optional)" hint="Leave empty to just calculate. Choose an employee to save the result and share it with them."><Select value={empId} onChange={(e) => setEmpId(e.target.value)}><option value="">No employee — calculate only</option>{employees.data?.items.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select></Field>
             <Field label="Tool"><Select value={tool} onChange={(e) => setTool(e.target.value)}>{Object.entries(TOOL_FORMS).map(([k, v]) => { const c = catalog.data?.find((x) => x.tool === k); return <option key={k} value={k}>{v.title}{c && !c.configured ? ' (not configured)' : ''}</option>; })}</Select></Field>
             <p className="font-outfit text-[13px] text-[var(--color-text-tertiary)]">{form.blurb}</p>
             {form.fields.map((f) => <FieldInput key={f.key} f={f} value={vals[f.key] ?? ''} onChange={(v) => setVals((s) => ({ ...s, [f.key]: v }))} />)}
@@ -75,11 +81,18 @@ export const Tools: React.FC = () => {
                   </div>))}
                 <Button variant="tertiary" size="sm" onClick={() => setRows((s) => ({ ...s, [r.key]: [...(s[r.key] ?? []), {}] }))}>Add row</Button>
               </div>))}
-            <Button loading={busy} disabled={!empId} onClick={compute}>Calculate</Button>
+            <Button loading={busy} onClick={compute}>Calculate</Button>
           </div>
         </Card>
-        <Card title="Results for this employee">
-          {!empId ? <Empty>Choose an employee to see their results.</Empty> : results.loading && !results.data ? <SectionSkeleton rows={2} /> : results.error ? <SectionError message={results.error} onRetry={results.reload} /> : !results.data?.length ? <Empty>No calculations yet.</Empty> : (
+        <Card title={empId ? 'Results for this employee' : 'Result'}>
+          {!empId ? (preview ? (
+            <div className="rounded-[12px] border border-[var(--color-border-primary)] p-4">
+              <div className="mb-2 flex items-center justify-between gap-2"><span className="font-jakarta text-[15px] font-semibold">{TOOL_FORMS[preview.tool]?.title ?? label(preview.tool)}</span><Pill tone="neutral">Not saved</Pill></div>
+              <Outputs value={preview.outputs} />
+              {preview.configRef && <p className="mt-2 font-outfit text-[12px] text-[var(--color-text-tertiary)]">Based on configuration: {preview.configRef}</p>}
+              <p className="mt-3 font-outfit text-[12px] text-[var(--color-text-tertiary)]">Choose an employee above and calculate again to save this and share it with them.</p>
+            </div>
+          ) : <Empty>Fill in the form and press Calculate. Choose an employee only if you want to save and share the result.</Empty>) : results.loading && !results.data ? <SectionSkeleton rows={2} /> : results.error ? <SectionError message={results.error} onRetry={results.reload} /> : !results.data?.length ? <Empty>No calculations yet.</Empty> : (
             <ul className="flex flex-col gap-4">
               {results.data.map((r) => (
                 <li key={r.id} className="rounded-[12px] border border-[var(--color-border-primary)] p-4">

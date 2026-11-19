@@ -36,6 +36,7 @@ export const opsService = {
   article: (slug: string) => api.get<PlaybookArticle>(`${K}/playbook/articles/${slug}`).then((r) => r.data),
   // tools
   tools: () => api.get<ToolEntry[]>(`${K}/tools`).then((r) => r.data),
+  calculate: (body: { tool: string; inputs: any }) => api.post<{ tool: string; inputs: any; outputs: any; configRef: string | null }>(`${K}/tools/calculate`, body).then((r) => r.data),
   createResult: (body: { employeeId: string; sessionId?: string; tool: string; inputs: any }) => api.post<ToolResult>(`${K}/tools/results`, body).then((r) => r.data),
   results: (employeeId: string) => api.get<ToolResult[]>(`${K}/tools/results`, { params: { employeeId } }).then((r) => r.data),
   updateResult: (id: string, inputs: any) => api.put<ToolResult>(`${K}/tools/results/${id}`, { inputs }).then((r) => r.data),
