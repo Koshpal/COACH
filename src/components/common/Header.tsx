@@ -4,6 +4,8 @@ import { Menu, LogOut, ChevronRight, Settings as SettingsIcon } from "lucide-rea
 import { ThemeToggle } from "./ThemeToggle";
 import { useMobileMenu } from "./Layout";
 import { IconSettings2 } from "../icons/figma";
+import { NotificationBell } from "./NotificationBell";
+import { authService } from "../../services/auth.service";
 
 interface HeaderProps {
   title: string;
@@ -53,7 +55,14 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
   const iconBtn =
     "flex h-10 items-center justify-center rounded-[8px] border border-[var(--color-border-primary)] px-2.5 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-colors";
 
-  const logout = () => {
+  // End the session on the server too (revokes the refresh token and clears the cookies). Clearing
+  // localStorage alone left the cookie valid, so anyone on a shared computer was still signed in.
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      /* offline: still leave the portal */
+    }
     localStorage.removeItem("user");
     navigate("/login");
   };
@@ -75,6 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
 
         <div className="flex items-center gap-2">
           {actions}
+          <NotificationBell buttonClass={iconBtn} />
           <button
             onClick={() => navigate("/settings")}
             className={iconBtn}

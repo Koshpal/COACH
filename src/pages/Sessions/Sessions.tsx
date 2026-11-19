@@ -19,6 +19,7 @@ import {
 } from "../../services/adapters";
 import { IST_TIMEZONE as IST, utcToIST as toIst } from "../../utils/timezone";
 import { useToast } from "../../context/ToastContext";
+import { usePolling } from "../../hooks/usePolling";
 import { coachingService, parseApiError } from "../../services/coaching.service";
 
 const TABS = ["Upcoming", "Past", "Cancelled"];
@@ -30,6 +31,13 @@ const GroupHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     {children}
   </h3>
 );
+
+/** "0:42" — how long a live session has been running. */
+const elapsed = (startIso: string | undefined, _tick: number) => {
+  if (!startIso) return "";
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(startIso).getTime()) / 60_000));
+  return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
+};
 
 const dedupe = (rows: ApiSession[]) => {
   const seen = new Set<string>();
@@ -46,6 +54,21 @@ export const Sessions: React.FC = () => {
   const [endDetailsOpen, setEndDetailsOpen] = useState(false);
   const [activeDetail, setActiveDetail] = useState<SessionDetailData | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Re-evaluate "live now" and the elapsed timer every 30 s while the tab is open.
+  const [tick, setTick] = useState(0);
+  usePolling(() => setTick((t) => t + 1), 30_000);
+
+  // Opens the programme workflow (Prepare → Start → Runner → Close). The booking id is the card id; the
+  // server creates the session on first open and returns the existing one afterwards.
+  const openProgramSession = async (bookingId: string) => {
+    try {
+      const session = await coachingService.createSession(bookingId);
+      navigate(`/sessions/${session.id}/prepare`);
+    } catch (e) {
+      showToast(parseApiError(e).message, "error");
+    }
+  };
 
   const { data, loading, error, reload } = useAsync(async () => {
     const s = await coachService.getSessions();
@@ -71,7 +94,8 @@ export const Sessions: React.FC = () => {
     () => month === ALL_MONTHS ? (data ?? []) : (data ?? []).filter((session) => monthLabel(session.startTime) === month),
     [data, month],
   );
-  const grouped = useMemo(() => (data ? groupSessions(filteredData) : null), [data, filteredData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `tick` re-derives live/past from the clock
+  const grouped = useMemo(() => (data ? groupSessions(filteredData) : null), [data, filteredData, tick]);
   const pastYears = useMemo(
     () =>
       grouped
@@ -186,11 +210,13 @@ export const Sessions: React.FC = () => {
             <div>
               <GroupHeading>Today</GroupHeading>
               <div className="space-y-4">
-                {grouped.today.map((s, i) => (
+                {grouped.today.map((s) => (
                   <SessionCard
                     key={s.id}
                     session={s}
-                    live={i === 0}
+                    live={s.status === "ready"}
+                    liveTimer={elapsed(s.startTime, tick)}
+                    onOpen={() => openProgramSession(s.id)}
                     onViewDetails={() => openDetail(s.id, "session")}
                     onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank", "noopener,noreferrer")}
                     onEnd={() => openDetail(s.id, "end-form")}
@@ -207,6 +233,7 @@ export const Sessions: React.FC = () => {
                   <SessionCard
                     key={s.id}
                     session={s}
+                    onOpen={() => openProgramSession(s.id)}
                     onViewDetails={() => openDetail(s.id, "session")}
                     onJoin={() => s.meetingLink && window.open(s.meetingLink, "_blank")}
                   />
@@ -235,6 +262,7 @@ export const Sessions: React.FC = () => {
                   <SessionCard
                     key={s.id}
                     session={s}
+                    onOpen={() => openProgramSession(s.id)}
                     onViewDetails={() => openDetail(s.id, "end-details")}
                     onRate={() => openDetail(s.id, "end-details")}
                   />

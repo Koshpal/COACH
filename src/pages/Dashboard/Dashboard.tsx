@@ -78,6 +78,9 @@ const TodaySessions: React.FC = () => {
 
 /* ── Open tasks ─────────────────────────────────────────────────────────── */
 const OpenTasks: React.FC = () => {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [busyTask, setBusyTask] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useAsync(() => coachingService.tasks({ page, pageSize: 6 }), [page]);
   return (
@@ -87,24 +90,34 @@ const OpenTasks: React.FC = () => {
       ) : (
         <>
           <ul className="flex flex-col gap-2">
-            {data.items.map((t, i) => (
-              <li key={`${t.type}-${i}`}>
-                <Link to={t.link} className="flex items-start justify-between gap-3 rounded-[12px] px-3 py-2.5 hover:bg-[var(--color-bg-secondary)]">
+            {data.items.map((t, i) => {
+              const row = (
+                <>
                   <span className="min-w-0">
                     <span className="block truncate font-jakarta text-[14px] font-medium text-[var(--color-text-primary)]">{t.title}</span>
                     <span className="block font-outfit text-[12px] text-[var(--color-text-tertiary)]">{t.subtitle}</span>
                   </span>
                   {t.dueAt && <span className="shrink-0 font-outfit text-[12px] text-[var(--color-error-dark)]">{fmtDate(t.dueAt)}</span>}
-                </Link>
-              </li>
-            ))}
+                </>
+              );
+              const cls = 'flex w-full items-start justify-between gap-3 rounded-[12px] px-3 py-2.5 text-left hover:bg-[var(--color-bg-secondary)]';
+              const key = `${t.type}-${i}`;
+              // A missed booking has no session yet: create it, then open Prepare (where it can be recorded as a no-show or run late).
+              return (
+                <li key={key}>
+                  {t.bookingId ? (
+                    <button type="button" className={cls} disabled={busyTask === key} onClick={async () => {
+                      setBusyTask(key);
+                      try { navigate(`/sessions/${(await coachingService.createSession(t.bookingId!)).id}/prepare`); } catch (e) { showToast(parseApiError(e).message, 'error'); } finally { setBusyTask(null); }
+                    }}>{row}</button>
+                  ) : <Link to={t.link} className={cls}>{row}</Link>}
+                </li>
+              );
+            })}
           </ul>
           <Pager page={data.page} pageSize={data.pageSize} total={data.total} onPage={setPage} />
         </>
       )}
-      <p className="mt-3 font-outfit text-[12px] text-[var(--color-text-tertiary)]">
-        Follow-up messages, escalations needing action and audit feedback will appear here as those modules are released.
-      </p>
     </Card>
   );
 };
@@ -128,8 +141,8 @@ const Performance: React.FC = () => {
           <Stat name="Notes completion" value={pct(p.notesCompletionRate.percent)} hint={p.notesCompletionRate.basis} />
           <Stat name="Follow-up completion" value={pct(p.followUpCompletionRate.percent)} hint={p.followUpCompletionRate.basis} />
           <Stat name="Employee feedback" value={p.employeeFeedback.count ? `${p.employeeFeedback.averageRating} / 5 (${p.employeeFeedback.count})` : 'No feedback yet'} />
-          <Stat name="Average quality score" value={p.averageQualityScore.available ? '—' : <Unavailable why={p.averageQualityScore.reason} />} />
-          <Stat name="Open escalations" value={p.openEscalations.available ? '0' : <Unavailable why={p.openEscalations.reason} />} />
+          <Stat name="Average quality score" value={!p.averageQualityScore.available ? <Unavailable why={p.averageQualityScore.reason} /> : p.averageQualityScore.average == null ? 'No audits yet' : `${p.averageQualityScore.average} / 5 (${p.averageQualityScore.count})`} />
+          <Stat name="Open escalations" value={!p.openEscalations.available ? <Unavailable why={p.openEscalations.reason} /> : p.openEscalations.count ?? 0} />
         </div>
       )}
     </Card>

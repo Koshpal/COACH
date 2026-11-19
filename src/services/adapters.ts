@@ -43,6 +43,7 @@ export interface ApiSession {
   hasFeedback?: boolean;
   rating?: number | null;
   isLive?: boolean;
+  needsCloseOut?: boolean;
   // dashboard-shaped sessions use these instead of `employee`
   clientId?: string;
   clientName?: string;
@@ -107,10 +108,15 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
   const end = toIst(s.endTime);
   const c = clientOf(s);
 
+  // `isLive` is computed when the list is fetched and goes stale; derive it from the clock instead.
+  const nowMs = Date.now();
+  const live = s.status === "CONFIRMED" && nowMs >= new Date(s.startTime).getTime() && nowMs <= new Date(s.endTime).getTime();
+
   let status: MockSession["status"] = "upcoming";
   if (s.status === "COMPLETED") status = "past";
   else if (s.status === "CANCELLED") status = "cancelled";
-  else if (s.isLive) status = "ready";
+  else if (s.needsCloseOut || (s.status === "CONFIRMED" && new Date(s.endTime).getTime() < nowMs)) status = "past";
+  else if (live) status = "ready";
 
   const today = istNow();
   let group: string;
@@ -133,6 +139,7 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
     group,
     meetingLink: s.meetingLink,
     startTime: s.startTime,
+    needsCloseOut: s.status === "CONFIRMED" && new Date(s.endTime).getTime() < nowMs,
   };
 }
 

@@ -12,8 +12,10 @@ export interface TodaySession {
   previousNotesAvailable: boolean; pendingActionItems: number; nextSessionAt: string | null; meetingLink: string;
 }
 export interface DashboardTask {
-  type: 'SESSION_NOT_CLOSED' | 'OVERDUE_ACTION_ITEM' | 'HOMEWORK_DUE' | 'NEXT_SESSION_NOT_BOOKED';
+  type: 'SESSION_NOT_CLOSED' | 'SESSION_NOT_HELD' | 'OVERDUE_ACTION_ITEM' | 'HOMEWORK_DUE' | 'HOMEWORK_TO_REVIEW' | 'NEXT_SESSION_NOT_BOOKED' | 'ESCALATION_UPDATE';
   title: string; subtitle: string; employeeId: string; link: string; dueAt: string | null;
+  /** A booking that was never opened: the portal creates its session when the task is clicked. */
+  bookingId?: string;
 }
 export interface ProgressRow {
   employeeId: string; employeeName: string; program: string | null; currentSession: number | null;
@@ -25,10 +27,9 @@ export interface Performance {
   sessionsCompleted: { total: number; thisMonth: number };
   notesCompletionRate: { available: boolean; percent: number | null; basis: string };
   followUpCompletionRate: { available: boolean; percent: number | null; basis: string };
-  averageQualityScore: { available: boolean; reason?: string };
+  averageQualityScore: { available: boolean; average?: number | null; count?: number; reason?: string };
   employeeFeedback: { available: boolean; averageRating: number | null; count: number };
-  openEscalations: { available: boolean; reason?: string };
-  monthlyImprovementFocus: { available: boolean; reason?: string };
+  openEscalations: { available: boolean; count?: number; reason?: string };
 }
 export interface EmployeeRow { id: string; name: string; department: string | null; company: string | null; photo: string | null }
 

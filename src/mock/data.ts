@@ -27,6 +27,8 @@ export interface MockSession {
   meetingLink?: string;
   /** raw ISO start — used for date-range filtering (Day/Week/Month) */
   startTime?: string;
+  /** a confirmed session whose time has passed and that was never closed out */
+  needsCloseOut?: boolean;
 }
 
 export interface MockClient {

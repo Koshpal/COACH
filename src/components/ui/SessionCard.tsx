@@ -11,6 +11,8 @@ interface SessionCardProps {
   onJoin?: (s: MockSession) => void;
   onRate?: (s: MockSession) => void;
   onEnd?: (s: MockSession) => void;
+  /** open the coaching-program workflow (prepare / run / close) for this session */
+  onOpen?: (s: MockSession) => void;
   /** render the live "● 0:03 / End Session" treatment instead of Join */
   live?: boolean;
   liveTimer?: string;
@@ -25,13 +27,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onJoin,
   onRate,
   onEnd,
+  onOpen,
   live,
-  liveTimer = "0:03",
+  liveTimer = "",
   className,
   muted,
 }) => {
-  const showJoin = session.status === "ready" && !live;
+  const showJoin = session.status === "ready";
   const isPast = session.status === "past";
+  const needsCloseOut = !!session.needsCloseOut;
 
   return (
     <div
@@ -62,7 +66,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       <div className="ml-auto flex items-center gap-4 sm:gap-6">
-        {isPast &&
+        {needsCloseOut && (
+          <span className="inline-flex h-8 items-center rounded-md bg-warning-50 px-2.5 font-jakarta text-[13px] font-semibold text-warning-700">Needs closing</span>
+        )}
+        {isPast && !needsCloseOut &&
           (session.rating != null ? (
             <RatingPill value={session.rating} />
           ) : (
@@ -73,6 +80,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               Rate now
             </button>
           ))}
+
+        {onOpen && session.status !== "cancelled" && !(isPast && !needsCloseOut) && (
+          <button
+            onClick={() => onOpen(session)}
+            className="font-jakarta text-[14px] font-semibold text-primary-600 hover:text-primary-700"
+          >
+            {needsCloseOut ? "Close out" : "Open session"}
+          </button>
+        )}
 
         <button
           onClick={() => onViewDetails?.(session)}
@@ -95,7 +111,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           <>
             <span className="inline-flex items-center gap-1.5 rounded-md bg-success-50 px-2.5 h-8 font-jakarta text-[13px] font-semibold text-success-700">
               <span className="h-1.5 w-1.5 rounded-full bg-success-500" />
-              {liveTimer}
+              {liveTimer || "Live"}
             </span>
             <button
               onClick={() => onEnd?.(session)}

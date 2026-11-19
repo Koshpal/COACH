@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/ui/Button';
 import { useAsync } from '../../hooks/useAsync';
@@ -66,7 +67,9 @@ const Contacts: React.FC = () => {
 export const Escalations: React.FC = () => {
   const { data, loading, error, reload } = useAsync(() => opsService.escalations(), []);
   const [open, setOpen] = useState(false);
-  const [sel, setSel] = useState<string | null>(null);
+  // A dashboard task links here with ?open=<id> so the case is already selected.
+  const [params] = useSearchParams();
+  const [sel, setSel] = useState<string | null>(params.get('open'));
   return (
     <div className="flex flex-col gap-6">
       <Header title="Escalations" actions={<Button size="sm" onClick={() => setOpen(true)}>Raise escalation</Button>} />
