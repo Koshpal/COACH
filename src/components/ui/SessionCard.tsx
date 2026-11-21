@@ -81,7 +81,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             </button>
           ))}
 
-        {onOpen && session.status !== "cancelled" && !(isPast && !needsCloseOut) && (
+        {session.isAssigned === false && session.status !== "cancelled" && !(isPast && !needsCloseOut) && (
+          <span
+            className="font-outfit text-[13px] text-neutral-400"
+            title="An admin has not assigned this employee to you, so the coaching notes and session tools are not available for them."
+          >
+            Not on your list
+          </span>
+        )}
+        {onOpen && session.isAssigned !== false && session.status !== "cancelled" && !(isPast && !needsCloseOut) && (
           <button
             onClick={() => onOpen(session)}
             className="font-jakarta text-[14px] font-semibold text-primary-600 hover:text-primary-700"

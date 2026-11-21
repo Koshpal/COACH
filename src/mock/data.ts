@@ -29,6 +29,8 @@ export interface MockSession {
   startTime?: string;
   /** a confirmed session whose time has passed and that was never closed out */
   needsCloseOut?: boolean;
+  /** false = the employee is not on this coach's list; undefined = unknown */
+  isAssigned?: boolean;
 }
 
 export interface MockClient {

@@ -44,6 +44,8 @@ export interface ApiSession {
   rating?: number | null;
   isLive?: boolean;
   needsCloseOut?: boolean;
+  /** this employee is on the coach's list (only then can the session be opened in the coaching workflow) */
+  isAssigned?: boolean;
   // dashboard-shaped sessions use these instead of `employee`
   clientId?: string;
   clientName?: string;
@@ -140,6 +142,7 @@ export function toSessionCard(s: ApiSession, roleHint?: string): MockSession {
     meetingLink: s.meetingLink,
     startTime: s.startTime,
     needsCloseOut: s.status === "CONFIRMED" && new Date(s.endTime).getTime() < nowMs,
+    isAssigned: s.isAssigned,
   };
 }
 
