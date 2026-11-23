@@ -67,8 +67,10 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
     navigate("/login");
   };
 
+  // No overflow-hidden on the header: the account menu and notification dropdown are absolutely positioned
+  // inside this card and would be clipped by it.
   return (
-    <header className="flex flex-col gap-6 overflow-hidden rounded-[16px] bg-[var(--color-bg-card)] p-4 shadow-[var(--shadow-drop-low)]">
+    <header className="relative z-30 flex flex-col gap-6 rounded-[16px] bg-[var(--color-bg-card)] p-4 shadow-[var(--shadow-drop-low)]">
       <div className="flex items-center gap-4">
         <button
           onClick={openMobileMenu}
@@ -98,6 +100,9 @@ export const Header: React.FC<HeaderProps> = ({ title, actions, below }) => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Account menu"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-bold text-white transition-transform hover:scale-105"
             >
               {initials}
