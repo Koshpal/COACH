@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { useAsync } from '../../hooks/useAsync';
 import { coachingService, parseApiError } from '../../services/coaching.service';
 import { Card, Pager, SectionError, SectionSkeleton } from './ui';
@@ -28,6 +29,11 @@ export const EmployeeProfile: React.FC = () => {
   const go = (k: string) => { setPage(1); setParams({ tab: k }, { replace: true }); };
   const name = header.data?.employee?.name;
 
+  // useAsync keeps the previous tab's data for one render after the tab changes. Rendering the new tab with that
+  // data crashed the page (e.g. Consent -> Privacy read `d.coach` of a consent payload), so only show data that
+  // was loaded for the tab being displayed.
+  const bodyReady = !body.loading && body.data?.tab === tab;
+
   let bodyError: { code?: string; message?: string } | null = null;
   if (body.error) { try { bodyError = JSON.parse(body.error); } catch { bodyError = { message: body.error }; } }
 
@@ -46,15 +52,15 @@ export const EmployeeProfile: React.FC = () => {
           ))}
         </div>
         <div className="pt-5" role="tabpanel">
-          {body.loading ? <SectionSkeleton /> : bodyError ? (
+          {body.loading || (body.data && !bodyReady && !body.error) ? <SectionSkeleton /> : bodyError ? (
             bodyError.code === 'CONSENT_REQUIRED' ? <SectionError message="This employee has not given, or has withdrawn, consent for coaching, so this information is hidden." />
             : bodyError.code === 'NOT_ASSIGNED' ? <SectionError message="This employee is not assigned to you." />
             : <SectionError message={bodyError.message ?? 'Could not load this section'} onRetry={body.reload} />
           ) : body.data ? (
-            <>
+            <ErrorBoundary resetKey={`${id}:${tab}:${page}`} fallback={<SectionError message="This section could not be displayed. Try another tab or reload." onRetry={body.reload} />}>
               <TabBody tab={tab} d={body.data} />
               {PAGED.has(tab) && <Pager page={body.data.page} pageSize={body.data.pageSize} total={body.data.total} onPage={setPage} />}
-            </>
+            </ErrorBoundary>
           ) : null}
         </div>
       </Card>

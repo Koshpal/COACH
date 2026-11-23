@@ -101,6 +101,35 @@ export const TabBody: React.FC<{ tab: string; d: any }> = ({ tab, d }) => {
       return <List empty="No action items yet." rows={d.items.map((i: any) => <div className="flex flex-wrap items-center justify-between gap-2"><span>{i.title} <span className="text-[12px] text-[var(--color-text-tertiary)]">· Session {i.sessionNumber} · {i.ownerType === 'EMPLOYEE' ? 'Employee' : 'Coach'}</span></span><span className="flex items-center gap-2"><Pill tone={i.kind === 'HOMEWORK' ? 'info' : 'neutral'}>{label(i.kind)}</Pill>{i.overdue ? <Pill tone="danger">Overdue</Pill> : <Pill tone={i.status === 'COMPLETED' ? 'success' : 'neutral'}>{label(i.status)}</Pill>}<span className="text-[12px] text-[var(--color-text-tertiary)]">Due {fmtDate(i.dueDate)}{i.completedAt ? ` · done ${fmtDate(i.completedAt)}` : ''}</span></span></div>)} />;
     case 'sessions':
       return <List empty="No coaching sessions yet." rows={d.items.map((s: any) => <div className="flex flex-wrap items-center justify-between gap-2"><span>Session {s.sessionNumber} · {fmtDate(s.scheduledStart)} <span className="text-[12px] text-[var(--color-text-tertiary)]">· script v{s.templateVersion}</span></span><span className="flex items-center gap-2"><Pill tone={statusTone(s.status)}>{label(s.status)}</Pill>{s.notesFinalised && <Pill tone="success">Notes final</Pill>}{!s.openable && <Pill>Previous coach</Pill>}</span></div>)} />;
+    case 'worksheets':
+      return (
+        <div className="flex flex-col gap-3">
+          {d.items.length === 0 && <Empty>No worksheets assigned to this employee yet.</Empty>}
+          {d.items.map((w: any) => (
+            <div key={w.id} className="rounded-[12px] bg-[var(--color-bg-secondary)] p-4 font-outfit text-[14px]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-medium">{w.title}</span>
+                <span className="flex items-center gap-2">
+                  <Pill tone={w.status === 'REVIEWED' ? 'success' : w.status === 'SUBMITTED' ? 'info' : 'neutral'}>{label(w.status)}</Pill>
+                  {w.overdue && <Pill tone="danger">Overdue</Pill>}
+                  <span className="text-[12px] text-[var(--color-text-tertiary)]">{w.dueDate ? `Due ${fmtDate(w.dueDate)}` : 'No due date'}</span>
+                </span>
+              </div>
+              {w.instructions && <p className="mt-1 text-[var(--color-text-secondary)]">{w.instructions}</p>}
+              {w.answers ? (
+                <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {(Array.isArray(w.fields) ? w.fields : []).map((f: any) => (
+                    <div key={f.key}><dt className="font-jakarta text-[12px] font-semibold text-[var(--color-text-secondary)]">{f.label}</dt>
+                      <dd className="mt-1 whitespace-pre-wrap">{w.answers[f.key] != null && w.answers[f.key] !== '' ? String(w.answers[f.key]) : <span className="text-[var(--color-text-tertiary)]">—</span>}</dd></div>
+                  ))}
+                </dl>
+              ) : <p className="mt-2 text-[12px] text-[var(--color-text-tertiary)]">Answers appear here once the employee submits.</p>}
+              {w.submittedAt && <p className="mt-2 text-[12px] text-[var(--color-text-tertiary)]">Submitted {fmtDate(w.submittedAt)}{w.reviewedAt ? ` · reviewed ${fmtDate(w.reviewedAt)}` : ''}</p>}
+              {w.reviewNote && <p className="mt-1 text-[13px]"><b>Your review note:</b> {w.reviewNote}</p>}
+            </div>
+          ))}
+        </div>
+      );
     case 'consent':
       return (
         <div className="flex flex-col gap-3">

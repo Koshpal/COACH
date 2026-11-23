@@ -1,6 +1,11 @@
 import React from 'react';
 
-interface Props { children: React.ReactNode; resetKey?: string }
+interface Props {
+  children: React.ReactNode;
+  resetKey?: string;
+  /** Rendered instead of the full-page message, so a failure in one panel does not take the whole page down. */
+  fallback?: React.ReactNode;
+}
 interface State { failed: boolean }
 
 /**
@@ -23,6 +28,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (!this.state.failed) return this.props.children;
+    if (this.props.fallback) return this.props.fallback;
     return (
       <div role="alert" className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
         <h1 className="font-jakarta text-[22px] font-semibold text-[var(--color-text-primary)]">Something went wrong on this page</h1>
