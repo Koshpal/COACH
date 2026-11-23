@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Empty, fmtDate, inr, label, Pill, statusTone } from './ui';
 
 /* Reusable pieces, also used by the session preparation view. */
@@ -104,6 +105,7 @@ export const TabBody: React.FC<{ tab: string; d: any }> = ({ tab, d }) => {
     case 'worksheets':
       return (
         <div className="flex flex-col gap-3">
+          <div className="flex justify-end"><Link to={`/homework?employee=${d.employeeId}`} className="rounded-[10px] bg-[var(--color-primary)] px-4 py-2 font-outfit text-[14px] font-medium text-white hover:bg-[var(--color-primary-darkest)]">Assign a worksheet</Link></div>
           {d.items.length === 0 && <Empty>No worksheets assigned to this employee yet.</Empty>}
           {d.items.map((w: any) => (
             <div key={w.id} className="rounded-[12px] bg-[var(--color-bg-secondary)] p-4 font-outfit text-[14px]">
@@ -120,7 +122,7 @@ export const TabBody: React.FC<{ tab: string; d: any }> = ({ tab, d }) => {
                 <dl className="mt-3 grid gap-3 sm:grid-cols-2">
                   {(Array.isArray(w.fields) ? w.fields : []).map((f: any) => (
                     <div key={f.key}><dt className="font-jakarta text-[12px] font-semibold text-[var(--color-text-secondary)]">{f.label}</dt>
-                      <dd className="mt-1 whitespace-pre-wrap">{w.answers[f.key] != null && w.answers[f.key] !== '' ? String(w.answers[f.key]) : <span className="text-[var(--color-text-tertiary)]">—</span>}</dd></div>
+                      <dd className="mt-1 whitespace-pre-wrap">{w.answers[f.key] != null && w.answers[f.key] !== '' ? (f.type === 'scale' ? `${w.answers[f.key]} / 5` : String(w.answers[f.key])) : <span className="text-[var(--color-text-tertiary)]">—</span>}</dd></div>
                   ))}
                 </dl>
               ) : <p className="mt-2 text-[12px] text-[var(--color-text-tertiary)]">Answers appear here once the employee submits.</p>}

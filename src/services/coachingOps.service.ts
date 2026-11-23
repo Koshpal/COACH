@@ -15,9 +15,9 @@ export interface PlaybookArticle extends PlaybookItem { body: string }
 export interface ToolEntry { tool: string; needsConfig: boolean; configured: boolean }
 export interface ToolResult { id: string; employeeId: string; sessionId: string | null; tool: string; inputs: any; outputs: any; status: 'DRAFT' | 'SHARED' | 'CONFIRMED'; version: number; configRef: string | null; updatedAt: string; confirmedAt: string | null }
 
-export interface WorksheetField { key: string; label: string; type: 'text' | 'number' | 'longtext'; required?: boolean }
-export interface Worksheet { id: string; key: string; title: string; description: string | null; fields: WorksheetField[] }
-export interface Homework { id: string; employeeId: string; templateId: string; status: 'ASSIGNED' | 'IN_PROGRESS' | 'SUBMITTED' | 'REVIEWED'; dueDate: string | null; instructions: string | null; answers: Record<string, string | number>; submittedAt: string | null; reviewNote: string | null; template: { title: string; fields: WorksheetField[] } }
+export interface WorksheetField { key: string; label: string; type: 'text' | 'number' | 'longtext' | 'choice' | 'scale'; required?: boolean; help?: string; options?: string[] }
+export interface Worksheet { id: string; key: string; title: string; description: string | null; category: string; estimatedMinutes: number | null; fields: WorksheetField[] }
+export interface Homework { id: string; employeeId: string; templateId: string; status: 'ASSIGNED' | 'IN_PROGRESS' | 'SUBMITTED' | 'REVIEWED'; dueDate: string | null; instructions: string | null; answers: Record<string, string | number>; submittedAt: string | null; reviewNote: string | null; template: { title: string; category?: string; fields: WorksheetField[] } }
 
 export interface Correction { id: string; sessionId: string; fieldKey: string | null; reason: string; status: 'OPEN' | 'ADDRESSED' | 'DECLINED'; response: string | null; createdAt: string }
 export interface LearningModule { id: string; key: string; title: string; kind: string; description: string | null; content: string | null; isRequired: boolean; requiredCount: number; isPlaceholderContent: boolean; assessments: { id: string; title: string; passScore: number }[]; status: string; completedCount: number }
