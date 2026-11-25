@@ -32,7 +32,9 @@ export const opsService = {
   escalationComment: (id: string, comment: string) => api.post(`${K}/escalations/${id}/comments`, { comment }).then((r) => r.data),
   contacts: (category?: EscCategory) => api.get<Contact[]>(`${K}/escalation-contacts`, { params: { category } }).then((r) => r.data),
   // playbook
-  searchPlaybook: (p: { search?: string; category?: string; page?: number }) => api.get<{ total: number; items: PlaybookItem[] }>(`${K}/playbook/articles`, { params: { ...p, pageSize: 20 } }).then((r) => r.data),
+  searchPlaybook: (p: { search?: string; category?: string; tag?: string; page?: number; pageSize?: number }) => api.get<{ total: number; items: PlaybookItem[] }>(`${K}/playbook/articles`, { params: { pageSize: 20, ...p } }).then((r) => r.data),
+  /** The Koshpal Coaching Playbook PDF. Fetched through the API so the coach's session is checked; never a public URL. */
+  handbookPdf: () => api.get<Blob>(`${K}/playbook/handbook`, { responseType: 'blob', timeout: 60_000 }).then((r) => r.data),
   article: (slug: string) => api.get<PlaybookArticle>(`${K}/playbook/articles/${slug}`).then((r) => r.data),
   // tools
   tools: () => api.get<ToolEntry[]>(`${K}/tools`).then((r) => r.data),

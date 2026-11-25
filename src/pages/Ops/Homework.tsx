@@ -11,7 +11,7 @@ import { Card, Empty, Pill, SectionError, SectionSkeleton, fmtDate, label } from
 import { Field, Select, TextArea, TextInput, statusPill } from './shared';
 
 const CATEGORY_LABEL: Record<string, string> = {
-  BUDGETING: 'Budgeting', SPENDING: 'Spending', SAVINGS: 'Savings', DEBT: 'Debt', GOALS: 'Goals',
+  FOUNDATION: 'Foundation program', BUDGETING: 'Budgeting', SPENDING: 'Spending', SAVINGS: 'Savings', DEBT: 'Debt', GOALS: 'Goals',
   PLANNING: 'Planning', PROTECTION: 'Protection', MINDSET: 'Mindset', FOLLOW_UP: 'Follow-up', GENERAL: 'General',
 };
 const TYPE_HINT: Record<WorksheetField['type'], string> = { text: 'Short answer', longtext: 'Written answer', number: 'Number', choice: 'Pick one', scale: 'Rate 1 to 5' };
