@@ -40,11 +40,14 @@ const Screens: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
+import PageMeta from './components/PageMeta';
+
 function App() {
   return (
     <ToastProvider>
       <ThemeProvider>
         <Router>
+          <PageMeta />
           <Screens>
           <Routes>
             <Route path="/login" element={<Login />} />
