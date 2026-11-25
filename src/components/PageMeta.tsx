@@ -20,14 +20,14 @@ interface PageMetaEntry {
 const DEFAULT_ENTRY: PageMetaEntry = {
   path: '/',
   title: 'Coach Portal',
-  description: 'Koshpal coach portal: run financial coaching sessions, follow the playbook and support your clients.',
+  description: 'Coach portal for Koshpal’s employee financial wellness program: run financial coaching sessions, follow the playbook and support your clients.',
 };
 
 export const PAGES: PageMetaEntry[] = [
-  { path: '/login', title: 'Coach Login', description: 'Sign in to the Koshpal coach portal to manage your sessions, clients and availability.' },
+  { path: '/login', title: 'Coach Login', description: 'Sign in to the Koshpal coach portal to run employee financial wellness coaching: your sessions, clients and availability.' },
   { path: '/forgot-password', title: 'Forgot Password', description: 'Reset your Koshpal coach portal password. Enter your email and we will send you a reset link.' },
   { path: '/reset-password/:token', title: 'Reset Password', description: 'Choose a new password for your Koshpal coach portal account.' },
-  { path: '/dashboard', title: 'Dashboard', description: 'Your coaching day at a glance: upcoming sessions, follow-ups, clients who need attention and tasks.' },
+  { path: '/dashboard', title: 'Dashboard', description: 'Your coaching day at a glance: upcoming employee financial coaching sessions, follow-ups, clients who need attention and tasks.' },
   { path: '/sessions', title: 'Sessions', description: 'All your coaching sessions, upcoming and past, with prepare, run and notes actions.' },
   { path: '/availability', title: 'Availability', description: 'See the weekly availability slots employees can book with you.' },
   { path: '/availability/edit', title: 'Edit Availability', description: 'Set your weekly working hours, breaks and time off so employees can book the right slots.' },
@@ -37,7 +37,7 @@ export const PAGES: PageMetaEntry[] = [
   { path: '/sessions/:id/run', title: 'Session Runner', description: 'Run a coaching session step by step with the script, timer, notes and closing checklist.' },
   { path: '/calendar', title: 'Calendar', description: 'Your coaching calendar with booked sessions, availability and time off.' },
   { path: '/escalations', title: 'Escalations', description: 'Raise and track escalations for clients who need specialist help or welfare support.' },
-  { path: '/playbook', title: 'Playbook', description: 'The Koshpal Coaching Playbook: session guides, rules, topic guides, templates and the full PDF.' },
+  { path: '/playbook', title: 'Playbook', description: 'The Koshpal Coaching Playbook for employee financial wellness: session guides, rules, topic guides, templates and the full PDF.' },
   { path: '/tools', title: 'Financial Tools', description: 'Calculators and worksheets to use with clients during coaching sessions.' },
   { path: '/homework', title: 'Homework', description: 'Assign worksheets and tasks to clients and review what they have completed.' },
   { path: '/learning', title: 'Learning', description: 'Coach training modules and certification progress.' },
@@ -77,7 +77,7 @@ export default function PageMeta() {
   const { pathname } = useLocation();
   useEffect(() => {
     const { entry, canonical } = resolvePageMeta(pathname);
-    const title = entry === DEFAULT_ENTRY ? 'Koshpal Coach Portal' : `${entry.title} | ${PORTAL}`;
+    const title = entry === DEFAULT_ENTRY ? 'Koshpal Coach Portal: Employee Financial Coaching' : `${entry.title} | ${PORTAL}`;
     document.title = title;
     setMeta('name', 'description', entry.description);
     setMeta('name', 'robots', 'index, follow');
